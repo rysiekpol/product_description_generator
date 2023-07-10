@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source venv/bin/activate
+echo "Running Python version: $(which python)"
 RUN_PORT="8000"
 
 echo "Waiting for postgres..."
@@ -10,17 +11,16 @@ then
     echo "Waiting for postgres..."
 
     while true; do
-      python3 manage.py showmigrations
+      python manage.py showmigrations
       if [[ "$?" == "0" ]]; then
         break
       fi
-      sleep 10
+      sleep 3
     done
 
     echo "PostgreSQL started"
 fi
 
-
-venv/bin/python manage.py flush --no-input
-venv/bin/python manage.py migrate --no-input
-venv/bin/gunicorn --bind "0.0.0.0:${RUN_PORT}" --access-logfile - --error-logfile - config.wsgi:application
+python manage.py makemigrations
+python manage.py migrate --no-input
+gunicorn --bind "0.0.0.0:${RUN_PORT}" --access-logfile - --error-logfile - config.wsgi:application
