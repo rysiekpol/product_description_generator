@@ -6,6 +6,8 @@ from .managers import CustomUserManager
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = None
+    is_superuser = None
+    last_login = None
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     email = models.EmailField(unique=True)
