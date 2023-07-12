@@ -1,10 +1,7 @@
 #!/bin/bash
 
-source venv/bin/activate
 echo "Running Python version: $(which python)"
 RUN_PORT="8000"
-
-echo "Waiting for postgres..."
 
 if [ "$DATABASE" = "postgres" ]
 then
