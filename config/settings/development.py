@@ -1,10 +1,10 @@
 from config.settings.base import *
 
-load_dotenv('.env.dev')
+load_dotenv(".env.dev")
 
 DEBUG = True
 
-SECRET_KEY=os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
 
@@ -18,3 +18,7 @@ DATABASES = {
         "PORT": 5432,
     }
 }
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "mailhog"
+EMAIL_PORT = 1025

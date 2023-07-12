@@ -32,13 +32,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "apps.users",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "apps.users",
     "django",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 SITE_ID = 1
@@ -69,7 +70,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, "templates"),
+            os.path.join(BASE_DIR, "apps/users/templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -158,12 +159,11 @@ REST_AUTH = {
     "REGISTER_SERIALIZER": "apps.users.serializers.UserRegisterationSerializer",
     "USER_DETAILS_SERIALIZER": "apps.users.serializers.CustomUserSerializer",
     "LOGIN_SERIALIZER": "apps.users.serializers.UserLoginSerializer",
-    # "LOGOUT_SERIALIZER": "apps.users.serializers.UserLogoutSerializer",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=2),
 }
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -176,7 +176,7 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 
 AUTHENTICATION_METHOD = "email"
 
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of allauth
@@ -184,3 +184,7 @@ AUTHENTICATION_BACKENDS = [
     # allauth specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+ACCOUNT_LOGOUT_ON_GET = True
+
+LOGIN_REDIRECT_URL = "user/details/"
