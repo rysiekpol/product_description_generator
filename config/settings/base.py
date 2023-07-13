@@ -70,7 +70,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            os.path.join(BASE_DIR, "apps/users/templates"),
+            BASE_DIR / "apps/users/templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -134,7 +134,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
 
@@ -143,8 +143,8 @@ MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Custom user model
-AUTH_USER_MODEL = "users.CustomUser"
+# User model
+AUTH_USER_MODEL = "users.User"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -157,7 +157,7 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE": "access-token",
     "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
     "REGISTER_SERIALIZER": "apps.users.serializers.UserRegisterationSerializer",
-    "USER_DETAILS_SERIALIZER": "apps.users.serializers.CustomUserSerializer",
+    "USER_DETAILS_SERIALIZER": "apps.users.serializers.UserSerializer",
     "LOGIN_SERIALIZER": "apps.users.serializers.UserLoginSerializer",
 }
 
@@ -185,6 +185,4 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-ACCOUNT_LOGOUT_ON_GET = True
-
-LOGIN_REDIRECT_URL = "user/details/"
+ACCOUNT_LOGOUT_ON_GET = False

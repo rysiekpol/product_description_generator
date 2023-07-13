@@ -12,7 +12,6 @@ COPY entrypoint.sh entrypoint.sh
 COPY apps apps
 COPY config config
 COPY manage.py manage.py
-COPY static static
 
 RUN pip install pip --upgrade && \
     pip install -r requirements.txt && \

@@ -4,39 +4,39 @@ from dj_rest_auth.serializers import LoginSerializer
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from .models import CustomUser
+from .models import User
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """
-    Serializer class to serialize CustomUser model.
+    Serializer class to serialize User model.
     """
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             "id",
             "email",
             "created_at",
             "updated_at",
-            "is_super",
+            "is_staff",
         )
-        read_only_fields = ("created_at", "updated_at", "id", "is_super")
+        read_only_fields = ("created_at", "updated_at", "id", "is_staff")
 
 
-class CustomUserAdminSerializer(serializers.ModelSerializer):
+class UserAdminSerializer(serializers.ModelSerializer):
     """
-    Serializer class to serialize CustomUser model for superuser permissions.
+    Serializer class to serialize User model for superuser permissions.
     """
 
     class Meta:
-        model = CustomUser
+        model = User
         fields = (
             "id",
             "email",
             "created_at",
             "updated_at",
-            "is_super",
+            "is_staff",
         )
         read_only_fields = ("created_at", "updated_at", "id")
 
