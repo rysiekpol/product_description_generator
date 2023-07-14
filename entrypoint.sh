@@ -1,10 +1,7 @@
 #!/bin/bash
 
-source venv/bin/activate
 echo "Running Python version: $(which python)"
 RUN_PORT="8000"
-
-echo "Waiting for postgres..."
 
 if [ "$DATABASE" = "postgres" ]
 then
@@ -21,6 +18,7 @@ then
     echo "PostgreSQL started"
 fi
 
+python manage.py collectstatic --no-input --clear
 python manage.py makemigrations
 python manage.py migrate --no-input
 gunicorn --bind "0.0.0.0:${RUN_PORT}" --access-logfile - --error-logfile - config.wsgi:application

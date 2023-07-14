@@ -8,13 +8,12 @@ services:
     container_name: django_api
     expose:
       - 8000
-    env_file:
-      - ./config/settings/.env.dev
     depends_on:
       - db
     volumes:
       - .:/code
-      - /code/venv
+    env_file:
+      - config/settings/.env.dev
 
   db:
     image: postgres:12-alpine
@@ -23,8 +22,6 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-    env_file:
-      - ./config/settings/.env.dev
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
@@ -35,6 +32,13 @@ services:
       - 80:80
     depends_on:
       - web
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog_api
+    ports:
+      - 1025:1025
+      - 8025:8025
 
 volumes:
   postgres_data:
