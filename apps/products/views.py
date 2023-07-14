@@ -1,5 +1,6 @@
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import Product
 from .permissions import IsProductAuthorOrReadOnly
@@ -36,8 +37,9 @@ class ProductCreateAPIView(CreateAPIView):
     An endpoint for creating product.
     """
 
+    parser_class = [MultiPartParser, FormParser]
     serializer_class = CreateProductSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class AllProductsAPIView(ListAPIView):
