@@ -5,28 +5,42 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: django
+    container_name: django_api
     expose:
       - 8000
-    env_file:
-      - ./config/settings/.env.dev
     depends_on:
       - db
+    volumes:
+      - .:/code
+    env_file:
+      - config/settings/.env.dev
 
   db:
-    image: postgres:12.0-alpine
-    container_name: postgres
+    image: postgres:12-alpine
+    container_name: postgres_api
     environment:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-    env_file:
-      - ./config/settings/.env.dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
 
   nginx:
     build: ./nginx
+    container_name: nginx_api
     ports:
       - 80:80
     depends_on:
       - web
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog_api
+    ports:
+      - 1025:1025
+      - 8025:8025
+
+volumes:
+  postgres_data:
+
 

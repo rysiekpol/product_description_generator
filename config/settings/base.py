@@ -11,37 +11,73 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
-
+from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
+from pydantic import Extra, PostgresDsn
+from pydantic_settings import BaseSettings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+
+class SettingsFromEnvironment(BaseSettings):
+    """Defines environment variables with their types and optional defaults"""
+
+    # PostgreSQL
+    DATABASE_URL: PostgresDsn
+
+    # Django
+    SECRET_KEY: str
+    DEBUG: bool = True
+    ALLOWED_HOSTS: list
+    EMAIL_BACKEND: str = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST: str = "mailhog"
+    EMAIL_PORT: int = 1025
+
+    class Config:
+        """Defines configuration for pydantic environment loading"""
+
+        env_file = str(BASE_DIR / "config/settings/.env.dev")
+        case_sensitive = True
+        extra = Extra.ignore
+
+
+config = SettingsFromEnvironment()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+DEBUG = config.DEBUG
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "foo"
-
-ALLOWED_HOSTS = []
-
+SECRET_KEY = config.SECRET_KEY
+ALLOWED_HOSTS = config.ALLOWED_HOSTS
 
 # Application definition
 
 INSTALLED_APPS = [
+    "apps.users",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "apps.users",
-    "django"
+    "django",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework.authtoken",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "rest_framework_simplejwt.token_blacklist",
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -58,9 +94,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            os.path.join(BASE_DIR, "templates"),
-        ],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -79,12 +113,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+DATABASES = {"default": dj_database_url.config()}
 
 
 # Password validation
@@ -123,6 +152,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
 
@@ -130,3 +160,54 @@ MEDIA_URL = "/media/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# User model
+AUTH_USER_MODEL = "users.User"
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+    ],
+}
+
+REST_AUTH = {
+    "USE_JWT": True,
+    "JWT_AUTH_COOKIE": "access-token",
+    "JWT_AUTH_REFRESH_COOKIE": "refresh-token",
+    "REGISTER_SERIALIZER": "apps.users.serializers.UserRegisterationSerializer",
+    "USER_DETAILS_SERIALIZER": "apps.users.serializers.UserSerializer",
+    "LOGIN_SERIALIZER": "apps.users.serializers.UserLoginSerializer",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=2),
+}
+
+# Allauth
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+ACCOUNT_EMAIL_REQUIRED = True
+
+ACCOUNT_USERNAME_REQUIRED = False
+
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+
+AUTHENTICATION_METHOD = "email"
+
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of allauth
+    "django.contrib.auth.backends.ModelBackend",
+    # allauth specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_LOGOUT_ON_GET = False
+
+# Email
+EMAIL_BACKEND = config.EMAIL_BACKEND
+EMAIL_HOST = config.EMAIL_HOST
+EMAIL_PORT = config.EMAIL_PORT
