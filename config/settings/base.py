@@ -58,6 +58,7 @@ ALLOWED_HOSTS = config.ALLOWED_HOSTS
 
 INSTALLED_APPS = [
     "apps.users",
+    "apps.products",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -169,6 +170,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 25,
 }
 
 REST_AUTH = {
