@@ -27,23 +27,29 @@ ALLOWED_HOSTS='[
 
 ## User URLs
 
--   **Password Reset:** `user/password/reset/` - Initiates the password reset process.
--   **User Login:** `user/login/` - Handles user login functionality.
--   **Logout:** `user/logout/` - Logs out the currently authenticated user.
--   **User Registration:** `user/register/` - Handles user registration.
--   **User Details:** `user/details/` - Retrieves details of the currently authenticated user.
--   **Certain User Details:** `user/details/<int:pk>/` - Retrieves details of a specific user.
--   **Password Change:** `user/password/change/` - Handles user password change.
--   **Email Verification:** `user/verify-email/` - Verifies user email address.
--   **Resend Email Verification:** `user/resend-email/` - Resends the verification email.
--   **Password Reset Confirm:** `user/password/reset/confirm/<uidb64>/<token>/` - Confirms the password reset request.
--   **Email Confirmation:** `user/confirm-email/<key>/` - Confirms the user's email address.
--   **Account Email Verification Sent:** `user/account-email-verification-sent/` - Notifies the user that the email verification was sent.
+-   **Password Reset:** POST `user/password/reset/` - Initiates the password reset process.
+-   **User Login:** POST `user/login/` - Handles user login functionality.
+-   **Logout:** POST `user/logout/` - Logs out the currently authenticated user.
+-   **User Registration:** POST `user/register/` - Handles user registration.
+-   **User Details:** GET/PUT `user/details/` - Retrieves details of the currently authenticated user.
+-   **Certain User Details:** GET `user/details/<int:pk>/` - Retrieves details of a specific user.
+-   **Password Change:** POST `user/password/change/` - Handles user password change.
+-   **Email Verification:** POST `user/verify-email/` - Verifies user email address.
+-   **Resend Email Verification:** POST `user/resend-email/` - Resends the verification email.
+-   **Password Reset Confirm:** POST `user/password/reset/confirm/<uidb64>/<token>/` - Confirms the password reset request.
+-   **Email Confirmation:** POST `user/confirm-email/<key>/` - Confirms the user's email address.
 
 ### JWT Authentication URLs (if enabled)
 
--   **Token Verify:** `user/token/verify/` - Verifies the authenticity of an access token.
--   **Token Refresh:** `user/token/refresh/` - Generates a new access token using a refresh token.
+-   **Token Verify:** GET `user/token/verify/` - Verifies the authenticity of an access token.
+-   **Token Refresh:** POST `user/token/refresh/` - Generates a new access token using a refresh token.
+
+## Product URLs
+
+-   **Search Product By Name:** GET `product/search/<str:name>` - Retrieve a list of products matching a partial name.
+-   **Product Details By ID:** GET/PUT `product/details/<int:pk>/` - Retrieve details of a specific product.
+-   **Create a Product:** POST `product/create/` - Create a new product.
+-   **All Products** GET `product/details` - Retrieve a list of all products in database with pagination
 
 ## Other URLs
 
