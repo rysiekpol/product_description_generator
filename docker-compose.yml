@@ -6,8 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: django_api
-    expose:
-      - 8000
+    ports:
+      - 5001:5001
     depends_on:
       - db
     volumes:
@@ -27,16 +27,16 @@ services:
     #volumes:
       #- postgres_data:/var/lib/postgresql/data/
 
-  nginx:
-    build: ./nginx
-    container_name: nginx_api
-    volumes:
-      - static_volume:/code/static
-      - media_volume:/code/media
-    ports:
-      - 80:80
-    depends_on:
-      - web
+#  nginx:
+#    build: ./nginx
+#    container_name: nginx_api
+#    volumes:
+#      - static_volume:/code/static
+#      - media_volume:/code/media
+#    ports:
+#      - 80:30396
+#    depends_on:
+#      - web
 
   mailhog:
     image: mailhog/mailhog

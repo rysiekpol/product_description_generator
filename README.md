@@ -18,6 +18,7 @@ DATABASE_NAME=psql_db
 DATABASE_HOST=db
 DATABASE=postgres
 DATABASE_URL=postgres://user:123@db:5432/psql_db
+PORT=5000
 ALLOWED_HOSTS='[
     "localhost",
     "127.0.0.1",

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Running Python version: $(which python)"
-RUN_PORT="8000"
+RUN_PORT="$PORT"
 
 if [ "$DATABASE" = "postgres" ]
 then
