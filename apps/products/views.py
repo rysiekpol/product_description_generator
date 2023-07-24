@@ -1,3 +1,6 @@
+import os
+
+import requests
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -52,3 +55,14 @@ class AllProductsAPIView(ListAPIView):
 
     def get_queryset(self):
         return Product.objects.all()
+
+
+class ProductUpdateAPIView(RetrieveUpdateAPIView):
+    """
+    An endpoint for updating product.
+    """
+
+    parser_class = [MultiPartParser, FormParser]
+    serializer_class = CreateProductSerializer
+    permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
+    queryset = Product.objects.all()

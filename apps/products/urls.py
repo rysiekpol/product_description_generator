@@ -11,4 +11,7 @@ urlpatterns = [
     ),
     path("details", views.AllProductsAPIView.as_view(), name="all_products"),
     path("create/", views.ProductCreateAPIView.as_view(), name="product_create"),
+    path(
+        "update/<int:pk>/", views.ProductUpdateAPIView.as_view(), name="product_update"
+    ),
 ]
