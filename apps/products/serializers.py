@@ -3,7 +3,7 @@ import os
 import requests
 from rest_framework import serializers
 
-from .models import Product, ProductImage
+from .models import Product, ProductDescriptions, ProductImage
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -13,7 +13,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductImage
-        fields = "__all__"
+        fields = ("id", "image")
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -78,10 +78,9 @@ class CreateProductSerializer(serializers.ModelSerializer):
             api_key = os.environ.get("API_KEY")
             api_secret = os.environ.get("API_SECRET")
             imagga_tags_url = f"https://api.imagga.com/v2/tags?image_url={image_url}"
-            headers = {"Authorization": f"Basic {api_key}:{api_secret}"}
 
             try:
-                response = requests.get(imagga_tags_url, headers=headers)
+                response = requests.get(imagga_tags_url, auth=(api_key, api_secret))
                 response_data = response.json()
 
                 # Extract the 5 most confident tags from the response
@@ -91,6 +90,9 @@ class CreateProductSerializer(serializers.ModelSerializer):
                 # Update the product instance with description and tags
                 product.description = f"Tags: {', '.join(tag_names)}"
                 product.tags = tag_names
+                ProductDescriptions.objects.create(
+                    product=product, description=product.description
+                )
                 product.save()
 
             except requests.RequestException:
