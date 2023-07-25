@@ -86,7 +86,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "rest_framework_simplejwt.token_blacklist",
-    "storages",
 ]
 
 SITE_ID = 1
@@ -165,12 +164,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # Cloudflare R2
 
-STORAGES = config.STORAGES
-AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
-AWS_S3_ENDPOINT_URL = config.AWS_S3_ENDPOINT_URL
-AWS_S3_ACCESS_KEY_ID = config.AWS_S3_ACCESS_KEY_ID
-AWS_S3_SECRET_ACCESS_KEY = config.AWS_S3_SECRET_ACCESS_KEY
-AWS_S3_SIGNATURE_VERSION = config.AWS_S3_SIGNATURE_VERSION
+if config.USE_R2:
+    STORAGES = config.STORAGES
+    AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
+    AWS_S3_ENDPOINT_URL = config.AWS_S3_ENDPOINT_URL
+    AWS_S3_ACCESS_KEY_ID = config.AWS_S3_ACCESS_KEY_ID
+    AWS_S3_SECRET_ACCESS_KEY = config.AWS_S3_SECRET_ACCESS_KEY
+    AWS_S3_SIGNATURE_VERSION = config.AWS_S3_SIGNATURE_VERSION
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"

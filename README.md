@@ -11,19 +11,29 @@ Then head to localhost. Thanks to nginx you don't have to use ports.
 Environment should have at least:
 
 ```
-SECRET_KEY=super-secret-key
-DATABASE_USER=user
+SECRET_KEY=change-me
+DATABASE_USER=db_user
 DATABASE_PASSWORD=123
-DATABASE_NAME=psql_db
-DATABASE_HOST=db
+DATABASE_NAME=db_name
+DATABASE_HOST=db_host
 DATABASE=postgres
-DATABASE_URL=postgres://user:123@db:5432/psql_db
+DATABASE_URL=postgres://db_user:123@db_host:5432/db_name
 PORT=5000
+USE_R2=False
+API_KEY=imagga_api_key
+API_SECRET=imagga_secret_key
+
+AWS_STORAGE_BUCKET_NAME=bucket_name
+AWS_S3_ENDPOINT_URL=https://58c7cbdb377fbe3f750e2b8fa96052eb.r2.cloudflarestorage.com
+AWS_S3_ACCESS_KEY_ID=bucket_access_key
+AWS_S3_SECRET_ACCESS_KEY=bucket_secret_key
+
 ALLOWED_HOSTS='[
     "localhost",
     "127.0.0.1",
-    "0.0.0.0"
+    "0.0.0.0",
 ]'
+
 ```
 
 ## User URLs
@@ -51,6 +61,7 @@ ALLOWED_HOSTS='[
 -   **Product Details By ID:** GET/PUT `product/details/<int:pk>/` - Retrieve details of a specific product.
 -   **Create a Product:** POST `product/create/` - Create a new product.
 -   **All Products** GET `product/details` - Retrieve a list of all products in database with pagination
+-   **Product Description** GET `product/descriptions/<int:pk>/`- Generate description for image
 
 ## Other URLs
 
