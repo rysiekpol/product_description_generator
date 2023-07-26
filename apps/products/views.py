@@ -28,7 +28,9 @@ class ProductsAPIView(ListAPIView):
 
     def get_queryset(self):
         name = self.kwargs["name"]
-        return Product.objects.filter(name__icontains=name)
+        return Product.objects.filter(name__icontains=name).filter(
+            created_by=self.request.user
+        )
 
 
 class ProductCreateAPIView(CreateAPIView):
@@ -49,4 +51,4 @@ class AllProductsAPIView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Product.objects.all()
+        return Product.objects.all().filter(created_by=self.request.user)
