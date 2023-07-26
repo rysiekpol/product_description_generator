@@ -14,9 +14,4 @@ urlpatterns = [
     path(
         "update/<int:pk>", views.ProductUpdateAPIView.as_view(), name="product_update"
     ),
-    path(
-        "descriptions/<int:pk>",
-        views.ProductDescriptionsAPIView.as_view(),
-        name="descriptions",
-    ),
 ]
