@@ -1,3 +1,6 @@
+import os
+from uuid import uuid4
+
 from django.db import models
 
 from apps.users.models import User
@@ -14,9 +17,13 @@ class Product(models.Model):
         return self.name
 
 
-# file will be named as a product name and a number of image
 def name_file(instance, filename):
-    return f'products/{str(instance.product.name).lower().replace(" ", "_")}/{filename}'
+    print(filename)
+    instance.original_filename = filename
+    # Get the original filename's extension
+    _, ext = os.path.splitext(filename)
+    # Return the new file path
+    return f'products/{str(instance.product.name).lower().replace(" ", "_")}/{uuid4()}{ext}'
 
 
 class ProductImage(models.Model):
@@ -25,8 +32,10 @@ class ProductImage(models.Model):
         on_delete=models.CASCADE,
         related_name="images",
     )
+    original_filename = models.CharField(max_length=255, blank=True, null=True)
     # path to image
-    image = models.ImageField(upload_to=name_file, blank=True, null=True)
+    image = models.ImageField(upload_to=name_file, blank=True, null=True, unique=True)
+    # field to store the original filename
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
