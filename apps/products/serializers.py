@@ -1,9 +1,13 @@
-import os
-
-import requests
+from celery import chain
+from django.urls import reverse
 from rest_framework import serializers
 
 from .models import Product, ProductDescriptions, ProductImage
+from .tasks import (
+    describe_product_images_task,
+    generate_product_description_task,
+    send_email_task,
+)
 
 MAX_N = 3
 MAX_WORDS = 800
@@ -101,9 +105,21 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
         # Create descriptions
         try:
-            combined_tags = product.describe_product_images()
-            description = product.generate_product_description(combined_tags, n, words)
-            ProductDescriptions.objects.create(product=product, description=description)
+            request = self.context["request"]
+            product_url_path = reverse(
+                "certain_product_details", kwargs={"pk": product.id}
+            )
+            product_url = request.build_absolute_uri(product_url_path)
+            chain(
+                describe_product_images_task.s(product.id),
+                generate_product_description_task.s(product.id, n, words),
+                send_email_task.s(
+                    subject="Product Created",
+                    message=f"Your product has been successfully created. You can see the description in {product_url}",
+                    from_email="no-reply@masze.pl",
+                    to_email=product.created_by.email,
+                ),
+            ).apply_async()
         except Exception as e:
             # If there is an error in creating the description, delete the product and raise an error
             product.delete()
@@ -123,11 +139,22 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
         # Update descriptions
         try:
-            combined_tags = instance.describe_product_images()
-            description = instance.generate_product_description(combined_tags, n, words)
-            ProductDescriptions.objects.create(
-                product=instance, description=description
+            request = self.context["request"]
+            product_url_path = reverse(
+                "certain_product_details", kwargs={"pk": instance.id}
             )
+            product_url = request.build_absolute_uri(product_url_path)
+
+            chain(
+                describe_product_images_task.s(instance.id),
+                generate_product_description_task.s(instance.id, n, words),
+                send_email_task.s(
+                    subject="Product Updated",
+                    message=f"Your product has been successfully updated. You can see the description in {product_url}",
+                    from_email="no-reply@masze.pl",
+                    to_email=instance.created_by.email,
+                ),
+            ).apply_async()
         except Exception as e:
             raise serializers.ValidationError(
                 f"Error updating product description: {e}"

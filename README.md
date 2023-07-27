@@ -28,6 +28,10 @@ AWS_S3_ENDPOINT_URL=https://58c7cbdb377fbe3f750e2b8fa96052eb.r2.cloudflarestorag
 AWS_S3_ACCESS_KEY_ID=bucket_access_key
 AWS_S3_SECRET_ACCESS_KEY=bucket_secret_key
 
+RABBITMQ_DEFAULT_USER=random_user
+RABBITMQ_DEFAULT_PASS=secret_pass
+CELERY_BROKER_URL=amqp://random_user:secret_pass@rabbitmq//
+
 ALLOWED_HOSTS='[
     "localhost",
     "127.0.0.1",

@@ -46,6 +46,8 @@ class SettingsFromEnvironment(BaseSettings):
     AWS_S3_SECRET_ACCESS_KEY: str
     AWS_S3_SIGNATURE_VERSION: str = "s3v4"
 
+    CELERY_BROKER_URL: str
+
     class Config:
         """Defines configuration for pydantic environment loading"""
 
@@ -86,6 +88,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "rest_framework_simplejwt.token_blacklist",
+    "celery",
 ]
 
 SITE_ID = 1
@@ -235,3 +238,7 @@ ACCOUNT_LOGOUT_ON_GET = False
 EMAIL_BACKEND = config.EMAIL_BACKEND
 EMAIL_HOST = config.EMAIL_HOST
 EMAIL_PORT = config.EMAIL_PORT
+
+# Celery
+
+CELERY_BROKER_URL = config.CELERY_BROKER_URL

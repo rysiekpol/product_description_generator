@@ -8,13 +8,9 @@ from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Product, ProductDescriptions
+from .models import Product
 from .permissions import IsProductAuthorOrReadOnly
-from .serializers import (
-    CreateProductSerializer,
-    ProductDescriptionsSerializer,
-    ProductSerializer,
-)
+from .serializers import CreateProductSerializer, ProductSerializer
 
 # Create your views here.
 

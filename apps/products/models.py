@@ -18,7 +18,6 @@ class Product(models.Model):
         api_key = os.environ.get("API_KEY")
         api_secret = os.environ.get("API_SECRET")
         combined_tags = set()
-
         for image in self.images.all():
             image_path = str(settings.BASE_DIR) + image.image.url
             try:
@@ -36,7 +35,7 @@ class Product(models.Model):
                 return f"HTTP Request failed: {e}"
 
             combined_tags.update(tag_names)
-        return combined_tags
+        return list(combined_tags)
 
     def generate_product_description(self, tags, n, words):
         api_key = os.environ.get("GPT_API_KEY")
