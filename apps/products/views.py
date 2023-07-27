@@ -1,28 +1,37 @@
 import os
 
-import requests
+from django.conf import settings
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework.decorators import permission_classes
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
 
-from .models import Product
+from .models import Product, ProductImage
 from .permissions import IsProductAuthorOrReadOnly
 from .serializers import CreateProductSerializer, ProductSerializer
 
 # Create your views here.
 
 
-class CertainProductAPIView(RetrieveUpdateAPIView):
+class ProductViewSet(viewsets.ModelViewSet):
     """
-    An endpoint for getting and updating certain product.
+    A viewset for viewing and editing product instances.
     """
 
-    serializer_class = ProductSerializer
     permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
     queryset = Product.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create" or self.action == "update":
+            return CreateProductSerializer
+        return ProductSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(created_by=self.request.user)
+        return queryset
 
 
 class ProductsAPIView(ListAPIView):
@@ -38,34 +47,23 @@ class ProductsAPIView(ListAPIView):
         return Product.objects.filter(name__icontains=name)
 
 
-class ProductCreateAPIView(CreateAPIView):
+@permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
+def serve_product_image(request, uuid_name):
     """
-    An endpoint for creating product.
-    """
-
-    parser_class = [MultiPartParser, FormParser]
-    serializer_class = CreateProductSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class AllProductsAPIView(ListAPIView):
-    """
-    An endpoint for getting all products.
+    A view to serve product images.
     """
 
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+    image = get_object_or_404(ProductImage, image__contains=uuid_name)
 
-    def get_queryset(self):
-        return Product.objects.all()
+    image_path = str(settings.BASE_DIR) + image.image.url
 
+    response = FileResponse(open(image_path, "rb"))
 
-class ProductUpdateAPIView(RetrieveUpdateAPIView):
-    """
-    An endpoint for updating product.
-    """
+    response["Content-Type"] = f"image/{image.image.name.split('.')[-1]}"
+    response["Content-Length"] = os.path.getsize(image_path)
 
-    parser_class = [MultiPartParser, FormParser]
-    serializer_class = CreateProductSerializer
-    permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
-    queryset = Product.objects.all()
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="{image.original_filename}"'
+
+    return response

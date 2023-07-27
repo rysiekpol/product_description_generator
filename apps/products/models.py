@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from uuid import uuid4
 
 import requests
 from django.conf import settings
@@ -75,9 +77,9 @@ class Product(models.Model):
         return self.name
 
 
-# file will be named as a product name and a number of image
 def name_file(instance, filename):
-    return f'products/{str(instance.product.name).lower().replace(" ", "_")}/{filename}'
+    new_filename = f"{uuid4()}{Path(filename).suffix}"
+    return Path(settings.MEDIA_PRODUCTS_ROOT) / Path(new_filename)
 
 
 class ProductImage(models.Model):
@@ -87,7 +89,10 @@ class ProductImage(models.Model):
         related_name="images",
     )
     # path to image
-    image = models.ImageField(upload_to=name_file, blank=True, null=True)
+    original_filename = models.CharField(max_length=255, blank=True, null=True)
+    # path to image
+    image = models.ImageField(upload_to=name_file, blank=True, null=True, unique=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

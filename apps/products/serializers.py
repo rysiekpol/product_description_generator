@@ -1,3 +1,5 @@
+import os
+
 from celery import chain
 from django.urls import reverse
 from rest_framework import serializers
@@ -18,9 +20,23 @@ class ProductImageSerializer(serializers.ModelSerializer):
     Serializer class to serialize ProductImage model.
     """
 
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
-        fields = ("id", "image")
+        fields = ("id", "image_url")
+
+    def get_image_url(self, obj):
+        """
+        Returns the URL of the image.
+        """
+        request = self.context["request"]
+        product_url_path = reverse(
+            "serve_image",
+            kwargs={"uuid_name": os.path.basename(obj.image.url).split(".")[0]},
+        )
+
+        return request.build_absolute_uri(product_url_path)
 
 
 class ProductDescriptionsSerializer(serializers.ModelSerializer):
@@ -86,7 +102,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop("uploaded_images")
-        product = Product.objects.create(**validated_data)
+        product = Product(**validated_data)
 
         n = int(self.context["request"].query_params.get("n", 1))
         words = int(self.context["request"].query_params.get("words", 400))
@@ -94,21 +110,21 @@ class CreateProductSerializer(serializers.ModelSerializer):
         n = min(n, MAX_N)
         words = min(words, MAX_WORDS)
 
-        # Create images
-        for image in uploaded_images:
-            try:
-                ProductImage.objects.create(product=product, image=image)
-            except Exception as e:
-                # If there is an error in creating an image, delete the product and raise an error
-                product.delete()
-                raise serializers.ValidationError(f"Error creating product image: {e}")
+        images = [
+            ProductImage(product=product, image=image) for image in uploaded_images
+        ]
+
+        for i in range(len(images)):
+            images[i].original_filename = uploaded_images[i].name
+
+        product.save()
+
+        ProductImage.objects.bulk_create(images)
 
         # Create descriptions
         try:
             request = self.context["request"]
-            product_url_path = reverse(
-                "certain_product_details", kwargs={"pk": product.id}
-            )
+            product_url_path = reverse("product-detail", kwargs={"pk": product.id})
             product_url = request.build_absolute_uri(product_url_path)
             chain(
                 describe_product_images_task.s(product.id),
@@ -140,9 +156,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         # Update descriptions
         try:
             request = self.context["request"]
-            product_url_path = reverse(
-                "certain_product_details", kwargs={"pk": instance.id}
-            )
+            product_url_path = reverse("product-detail", kwargs={"pk": instance.id})
             product_url = request.build_absolute_uri(product_url_path)
 
             chain(

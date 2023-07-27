@@ -62,10 +62,10 @@ ALLOWED_HOSTS='[
 ## Product URLs
 
 -   **Search Product By Name:** GET `product/search/<str:name>` - Retrieve a list of products matching a partial name.
--   **Product Details By ID:** GET/PUT `product/details/<int:pk>/` - Retrieve details of a specific product.
--   **Create a Product:** POST `product/create/` - Create a new product.
--   **All Products** GET `product/details` - Retrieve a list of all products in database with pagination
--   **Product Description** GET `product/descriptions/<int:pk>/`- Generate description for image
+-   **Product Details By ID:** GET/PUT `product/<int:pk>/` - Retrieve details of a specific product or update product.
+-   **Create a Product:** POST `product/` - Create a new product.
+-   **All Products** GET `product/` - Retrieve a list of all products in database with pagination
+-   **Product Image** GET `product/images/<int:pk>` - Download product certain image
 
 ## Other URLs
 
