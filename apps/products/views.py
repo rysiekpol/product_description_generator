@@ -1,3 +1,5 @@
+from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 
@@ -8,14 +10,23 @@ from .serializers import CreateProductSerializer, ProductSerializer
 # Create your views here.
 
 
-class CertainProductAPIView(RetrieveUpdateAPIView):
+class ProductViewSet(viewsets.ModelViewSet):
     """
-    An endpoint for getting and updating certain product.
+    A viewset for viewing and editing product instances.
     """
 
-    serializer_class = ProductSerializer
     permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
     queryset = Product.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateProductSerializer
+        return ProductSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(created_by=self.request.user)
+        return queryset
 
 
 class ProductsAPIView(ListAPIView):
@@ -24,31 +35,10 @@ class ProductsAPIView(ListAPIView):
     """
 
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsProductAuthorOrReadOnly]
 
     def get_queryset(self):
         name = self.kwargs["name"]
         return Product.objects.filter(name__icontains=name).filter(
             created_by=self.request.user
         )
-
-
-class ProductCreateAPIView(CreateAPIView):
-    """
-    An endpoint for creating product.
-    """
-
-    serializer_class = CreateProductSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class AllProductsAPIView(ListAPIView):
-    """
-    An endpoint for getting all products.
-    """
-
-    serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Product.objects.all().filter(created_by=self.request.user)

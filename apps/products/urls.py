@@ -1,14 +1,13 @@
 from django.urls import path, re_path
+from rest_framework import routers
 
-from apps.products import views
+from .views import ProductsAPIView, ProductViewSet
 
 urlpatterns = [
-    path("search/<str:name>", views.ProductsAPIView.as_view(), name="products_details"),
-    path(
-        "details/<int:pk>/",
-        views.CertainProductAPIView.as_view(),
-        name="certain_product_details",
-    ),
-    path("details", views.AllProductsAPIView.as_view(), name="all_products"),
-    path("create/", views.ProductCreateAPIView.as_view(), name="product_create"),
+    path("search/<str:name>", ProductsAPIView.as_view(), name="product-search"),
 ]
+
+router = routers.DefaultRouter()
+router.register(r"", ProductViewSet, basename="product")
+
+urlpatterns += router.urls
