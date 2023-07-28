@@ -1,4 +1,4 @@
-import os
+from pathlib import PurePath
 
 from celery import chain
 from django.urls import reverse
@@ -33,7 +33,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         product_url_path = reverse(
             "serve_image",
-            kwargs={"uuid_name": os.path.basename(obj.image.url).split(".")[0]},
+            kwargs={"uuid_name": PurePath(obj.image.url).stem},
         )
 
         return request.build_absolute_uri(product_url_path)

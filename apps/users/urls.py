@@ -1,7 +1,6 @@
 from dj_rest_auth.app_settings import api_settings
 from dj_rest_auth.registration.views import ResendEmailVerificationView, VerifyEmailView
 from dj_rest_auth.views import (
-    LogoutView,
     PasswordChangeView,
     PasswordResetConfirmView,
     PasswordResetView,
@@ -17,7 +16,7 @@ urlpatterns = [
         name="password_reset",
     ),
     path("login/", views.UserLoginAPIView.as_view(), name="login"),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("logout/", views.LogoutAPIView.as_view(), name="logout"),
     path("register/", views.UserRegisterationAPIView.as_view(), name="register"),
     path("details/", views.UserAPIView.as_view(), name="user"),
     path("details/<int:pk>/", views.CertainUserAPIView.as_view(), name="certain_user"),
