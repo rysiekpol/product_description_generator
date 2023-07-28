@@ -9,7 +9,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Product, ProductDescriptions, ProductImage
+from .models import Product, ProductImage
 from .permissions import IsProductAuthorOrReadOnly
 from .serializers import CreateProductSerializer, ProductSerializer
 
@@ -54,7 +54,7 @@ def serve_product_image(request, uuid_name):
     A view to serve product images.
     """
 
-    image = get_object_or_404(ProductImage, pk=pk)
+    image = get_object_or_404(ProductImage, image__contains=uuid_name)
 
     image_path = os.path.join(settings.BASE_DIR, image.image.url.lstrip("/"))
 
