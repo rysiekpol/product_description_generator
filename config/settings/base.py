@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "rest_framework_simplejwt.token_blacklist",
     "celery",
+    "drf_yasg",
 ]
 
 SITE_ID = 1

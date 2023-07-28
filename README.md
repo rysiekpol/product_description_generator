@@ -46,6 +46,11 @@ ALLOWED_HOSTS='[
 
 ```
 
+## Documentation
+
+-   **Read documentation** `docs/` - Opens project documentation with whole api endpoints
+-   **Test with playground** `playground/` - Open project documentation with playground
+
 ## User URLs
 
 -   **Password Reset:** POST `user/password/reset/` - Initiates the password reset process.
