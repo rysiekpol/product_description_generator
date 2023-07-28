@@ -94,7 +94,6 @@ class LogoutAPIView(LogoutView):
             cookie_name = api_settings.JWT_AUTH_COOKIE
 
             unset_jwt_cookies(response)
-            print(request.COOKIES)
 
             if "rest_framework_simplejwt.token_blacklist" in settings.INSTALLED_APPS:
                 # add refresh token to blacklist

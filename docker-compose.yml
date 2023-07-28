@@ -45,6 +45,32 @@ services:
       - 1025:1025
       - 8025:8025
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    env_file:
+      - config/settings/.env.dev
+
+  worker:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_celery_worker
+    command: celery -A config worker -l info
+    depends_on:
+      - web
+      - db
+      - rabbitmq
+    volumes:
+      - .:/code
+      - static_volume:/code/static
+      - media_volume:/code/media
+    env_file:
+      - config/settings/.env.dev
+
 volumes:
   # postgres_data:
   static_volume:

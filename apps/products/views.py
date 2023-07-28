@@ -1,25 +1,17 @@
 import mimetypes
 import os
 
-import requests
 from django.conf import settings
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
-from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.request import Request
-from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework.decorators import permission_classes
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Product, ProductDescriptions, ProductImage
 from .permissions import IsProductAuthorOrReadOnly
-from .serializers import (
-    CreateProductSerializer,
-    ProductDescriptionsSerializer,
-    ProductSerializer,
-)
+from .serializers import CreateProductSerializer, ProductSerializer
 
 # Create your views here.
 
@@ -33,7 +25,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action == "create" or self.action == "update":
             return CreateProductSerializer
         return ProductSerializer
 
@@ -56,7 +48,8 @@ class ProductsAPIView(ListAPIView):
         return Product.objects.filter(name__icontains=name)
 
 
-def serve_product_image(request, pk):
+@permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
+def serve_product_image(request, uuid_name):
     """
     A view to serve product images.
     """

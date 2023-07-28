@@ -1,6 +1,9 @@
 import os
+from pathlib import Path
 from uuid import uuid4
 
+import requests
+from django.conf import settings
 from django.db import models
 
 from apps.users.models import User
@@ -18,12 +21,8 @@ class Product(models.Model):
 
 
 def name_file(instance, filename):
-    print(filename)
-    instance.original_filename = filename
-    # Get the original filename's extension
-    _, ext = os.path.splitext(filename)
-    # Return the new file path
-    return f'products/{str(instance.product.name).lower().replace(" ", "_")}/{uuid4()}{ext}'
+    new_filename = f"{uuid4()}{Path(filename).suffix}"
+    return Path(settings.MEDIA_PRODUCTS_ROOT) / Path(new_filename)
 
 
 class ProductImage(models.Model):
@@ -32,10 +31,10 @@ class ProductImage(models.Model):
         on_delete=models.CASCADE,
         related_name="images",
     )
+    # field to store the original filename
     original_filename = models.CharField(max_length=255, blank=True, null=True)
     # path to image
     image = models.ImageField(upload_to=name_file, blank=True, null=True, unique=True)
-    # field to store the original filename
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

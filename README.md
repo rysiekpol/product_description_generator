@@ -24,9 +24,19 @@ API_KEY=imagga_api_key
 API_SECRET=imagga_secret_key
 
 AWS_STORAGE_BUCKET_NAME=bucket_name
-AWS_S3_ENDPOINT_URL=https://58c7cbdb377fbe3f750e2b8fa96052eb.r2.cloudflarestorage.com
+AWS_S3_ENDPOINT_URL=bucket_url
 AWS_S3_ACCESS_KEY_ID=bucket_access_key
 AWS_S3_SECRET_ACCESS_KEY=bucket_secret_key
+
+EMAIL_HOST=email_host
+EMAIL_PORT=email_port
+EMAIL_HOST_USER=email_user
+EMAIL_HOST_PASSWORD=email_password
+DEFAULT_FROM_EMAIL=email_default_user
+
+RABBITMQ_DEFAULT_USER=random_user
+RABBITMQ_DEFAULT_PASS=secret_pass
+CELERY_BROKER_URL=amqp://random_user:secret_pass@rabbitmq//
 
 ALLOWED_HOSTS='[
     "localhost",
@@ -35,6 +45,11 @@ ALLOWED_HOSTS='[
 ]'
 
 ```
+
+## Documentation
+
+-   **Read documentation** `docs/` - Opens project documentation with whole api endpoints
+-   **Test with playground** `playground/` - Open project documentation with playground
 
 ## User URLs
 
@@ -58,10 +73,10 @@ ALLOWED_HOSTS='[
 ## Product URLs
 
 -   **Search Product By Name:** GET `product/search/<str:name>` - Retrieve a list of products matching a partial name.
--   **Product Details By ID:** GET/PUT `product/details/<int:pk>/` - Retrieve details of a specific product.
--   **Create a Product:** POST `product/create/` - Create a new product.
--   **All Products** GET `product/details` - Retrieve a list of all products in database with pagination
--   **Product Description** GET `product/descriptions/<int:pk>/`- Generate description for image
+-   **Product Details By ID:** GET/PUT `product/<int:pk>/` - Retrieve details of a specific product or update product.
+-   **Create a Product:** POST `product/` - Create a new product.
+-   **All Products** GET `product/` - Retrieve a list of all products in database with pagination
+-   **Product Image** GET `product/images/<int:pk>` - Download product certain image
 
 ## Other URLs
 
