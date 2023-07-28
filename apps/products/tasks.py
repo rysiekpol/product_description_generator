@@ -22,4 +22,5 @@ def generate_product_description_task(tags, product_id, n, words):
 
 @shared_task
 def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
+    print("test maila")	
     send_mail(subject, message, from_email, [to_email])

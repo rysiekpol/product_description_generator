@@ -24,9 +24,15 @@ API_KEY=imagga_api_key
 API_SECRET=imagga_secret_key
 
 AWS_STORAGE_BUCKET_NAME=bucket_name
-AWS_S3_ENDPOINT_URL=https://58c7cbdb377fbe3f750e2b8fa96052eb.r2.cloudflarestorage.com
+AWS_S3_ENDPOINT_URL=bucket_url
 AWS_S3_ACCESS_KEY_ID=bucket_access_key
 AWS_S3_SECRET_ACCESS_KEY=bucket_secret_key
+
+EMAIL_HOST=email_host
+EMAIL_PORT=email_port
+EMAIL_HOST_USER=email_user
+EMAIL_HOST_PASSWORD=email_password
+DEFAULT_FROM_EMAIL=email_default_user
 
 RABBITMQ_DEFAULT_USER=random_user
 RABBITMQ_DEFAULT_PASS=secret_pass

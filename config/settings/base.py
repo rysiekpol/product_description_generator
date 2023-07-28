@@ -30,11 +30,14 @@ class SettingsFromEnvironment(BaseSettings):
 
     # Django
     SECRET_KEY: str
-    DEBUG: bool = True
+    DEBUG: bool = False
     ALLOWED_HOSTS: list
     EMAIL_BACKEND: str = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST: str = "mailhog"
     EMAIL_PORT: int = 1025
+    EMAIL_HOST_USER: str = ""
+    EMAIL_HOST_PASSWORD: str = ""
+    DEFAULT_FROM_EMAIL: str = ""
     USE_R2: bool = True
     STORAGES: dict = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
@@ -250,3 +253,8 @@ if DEBUG == False:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    EMAIL_HOST_USER = config.EMAIL_HOST_USER
+    EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+    EMAIL_USE_TLS = False
+    DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
