@@ -1,3 +1,6 @@
+import os
+from uuid import uuid4
+
 from django.db import models
 
 from apps.users.models import User
@@ -7,10 +10,45 @@ from apps.users.models import User
 class Product(models.Model):
     name = models.CharField(max_length=128, unique=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    # path to image
-    image = models.CharField(max_length=128, null=True, blank=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+
+def name_file(instance, filename):
+    print(filename)
+    instance.original_filename = filename
+    # Get the original filename's extension
+    _, ext = os.path.splitext(filename)
+    # Return the new file path
+    return f'products/{str(instance.product.name).lower().replace(" ", "_")}/{uuid4()}{ext}'
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    original_filename = models.CharField(max_length=255, blank=True, null=True)
+    # path to image
+    image = models.ImageField(upload_to=name_file, blank=True, null=True, unique=True)
+    # field to store the original filename
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.image.name}"
+
+
+class ProductDescriptions(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="descriptions",
+    )
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.product.name} - {self.description}"
