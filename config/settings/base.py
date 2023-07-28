@@ -35,6 +35,16 @@ class SettingsFromEnvironment(BaseSettings):
     EMAIL_BACKEND: str = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST: str = "mailhog"
     EMAIL_PORT: int = 1025
+    USE_R2: bool = True
+    STORAGES: dict = {
+        "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+        "staticfiles": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
+    }
+    AWS_STORAGE_BUCKET_NAME: str
+    AWS_S3_ENDPOINT_URL: str
+    AWS_S3_ACCESS_KEY_ID: str
+    AWS_S3_SECRET_ACCESS_KEY: str
+    AWS_S3_SIGNATURE_VERSION: str = "s3v4"
 
     class Config:
         """Defines configuration for pydantic environment loading"""
@@ -152,11 +162,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 # Static files (CSS, JavaScript, Images)
+# Cloudflare R2
+
+if config.USE_R2:
+    STORAGES = config.STORAGES
+    AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
+    AWS_S3_ENDPOINT_URL = config.AWS_S3_ENDPOINT_URL
+    AWS_S3_ACCESS_KEY_ID = config.AWS_S3_ACCESS_KEY_ID
+    AWS_S3_SECRET_ACCESS_KEY = config.AWS_S3_SECRET_ACCESS_KEY
+    AWS_S3_SIGNATURE_VERSION = config.AWS_S3_SIGNATURE_VERSION
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

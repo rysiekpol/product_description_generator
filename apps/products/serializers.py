@@ -1,7 +1,10 @@
+import os
+
+import requests
 from django.urls import reverse
 from rest_framework import serializers
 
-from .models import Product, ProductImage
+from .models import Product, ProductDescriptions, ProductImage
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -26,6 +29,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
             "serve_image",
             kwargs={"pk": obj.id},
         )
+        fields = ("id", "image")
+
+
+class ProductDescriptionsSerializer(serializers.ModelSerializer):
+    """
+    Serializer class to serialize ProductDescriptions model.
+    """
+
+    class Meta:
+        model = ProductDescriptions
+        fields = ("id", "description")
+        read_only_fields = ("id", "description")
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -34,6 +49,7 @@ class ProductSerializer(serializers.ModelSerializer):
     """
 
     images = ProductImageSerializer(many=True, read_only=True)
+    descriptions = ProductDescriptionsSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
@@ -44,6 +60,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "images",
+            "descriptions",
         )
         read_only_fields = ("created_at", "updated_at", "id", "created_by")
 
@@ -61,6 +78,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         max_length=5,
     )
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    description = serializers.CharField(max_length=500, read_only=True)
 
     class Meta:
         model = Product
@@ -72,6 +90,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
             "updated_at",
             "images",
             "uploaded_images",
+            "description",
         )
 
     def create(self, validated_data):
