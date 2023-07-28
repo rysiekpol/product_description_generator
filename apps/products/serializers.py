@@ -1,6 +1,3 @@
-import os
-
-import requests
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -29,7 +26,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
             "serve_image",
             kwargs={"pk": obj.id},
         )
-        fields = ("id", "image")
 
 
 class ProductDescriptionsSerializer(serializers.ModelSerializer):
@@ -98,11 +94,9 @@ class CreateProductSerializer(serializers.ModelSerializer):
         product = Product(**validated_data)
 
         images = [
-            ProductImage(product=product, image=image) for image in uploaded_images
+            ProductImage(product=product, image=image, original_filename=image.name)
+            for image in uploaded_images
         ]
-
-        for i in range(len(images)):
-            images[i].original_filename = uploaded_images[i].name
 
         product.save()
 

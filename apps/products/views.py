@@ -1,3 +1,4 @@
+import mimetypes
 import os
 
 import requests
@@ -128,11 +129,18 @@ def serve_product_image(request, pk):
 
     image = get_object_or_404(ProductImage, pk=pk)
 
-    image_path = str(settings.BASE_DIR) + image.image.url
+    image_path = os.path.join(settings.BASE_DIR, image.image.url.lstrip("/"))
 
     response = FileResponse(open(image_path, "rb"))
 
-    response["Content-Type"] = f"image/{image.image.name.split('.')[-1]}"
+    # Get the mimetype and encoding of the image file
+    mime_type, _ = mimetypes.guess_type(image.image.url)
+
+    # If the mimetype could not be guessed then default it to 'application/octet-stream'
+    if mime_type is None:
+        mime_type = "application/octet-stream"
+
+    response["Content-Type"] = mime_type
     response["Content-Length"] = os.path.getsize(image_path)
 
     response[
