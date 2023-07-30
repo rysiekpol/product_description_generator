@@ -19,5 +19,3 @@ COPY config config
 COPY manage.py manage.py
 
 CMD ["./entrypoint.sh"]
-
-

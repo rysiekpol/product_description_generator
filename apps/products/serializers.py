@@ -1,8 +1,9 @@
 from pathlib import PurePath
 
 from celery import chain
-from django.urls import reverse
 from rest_framework import serializers
+
+from django.urls import reverse
 
 from .models import Product, ProductDescriptions, ProductImage
 from .tasks import (
@@ -104,14 +105,20 @@ class CreateProductSerializer(serializers.ModelSerializer):
         uploaded_images = validated_data.pop("uploaded_images")
         product = Product(**validated_data)
 
+        n = int(self.context["request"].query_params.get("n", 1))
+        words = int(self.context["request"].query_params.get("words", 400))
+
+        n = min(n, MAX_N)
+        words = min(words, MAX_WORDS)
+
         images = [
             ProductImage(product=product, image=image, original_filename=image.name)
             for image in uploaded_images
         ]
 
-        ProductImage.objects.bulk_create(images)
-
         product.save()
+
+        ProductImage.objects.bulk_create(images)
 
         # Create descriptions
         try:

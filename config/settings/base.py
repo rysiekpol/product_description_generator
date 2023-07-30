@@ -258,3 +258,7 @@ if DEBUG == False:
     EMAIL_USE_TLS = False
     DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+MIGRATION_MODULES = {
+    "sites": "config.fixtures.sites_migrations",
+}

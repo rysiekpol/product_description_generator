@@ -8,22 +8,12 @@ services:
     container_name: django_api
     ports:
       - 5001:5001
-    depends_on:
-      - db
     volumes:
       - .:/code
       - static_volume:/code/static
       - media_volume:/code/media
     env_file:
-      - config/settings/.env.dev
-
-  db:
-    image: postgres:12-alpine
-    container_name: postgres_api
-    environment:
-      - POSTGRES_USER=${DATABASE_USER}
-      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
-      - POSTGRES_DB=${DATABASE_NAME}
+      - config/settings/.env.prod
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -32,24 +22,23 @@ services:
         - 5672:5672
         - 15672:15672
     env_file:
-      - config/settings/.env.dev
+      - config/settings/.env.prod
 
   worker:
     build: 
       context: .
       dockerfile: Dockerfile
     container_name: django_celery_worker
-    command: celery -A config worker -l info
+    command: celery -A config worker -l info -c 2 --max-memory-per-child=150000 --max-tasks-per-child=4
     depends_on:
       - web
-      - db
       - rabbitmq
     volumes:
       - .:/code
       - static_volume:/code/static
       - media_volume:/code/media
     env_file:
-      - config/settings/.env.dev
+      - config/settings/.env.prod
 
 volumes:
   static_volume:
