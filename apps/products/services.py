@@ -1,7 +1,13 @@
+from enum import Enum
 from pathlib import Path
 
 import requests
 from django.conf import settings
+
+
+class Operation(Enum):
+    CREATED = "created"
+    UPDATED = "updated"
 
 
 def describe_product_images(product):

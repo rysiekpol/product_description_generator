@@ -1,10 +1,14 @@
 from __future__ import absolute_import, unicode_literals
 
-from celery import shared_task
+from celery import chain, shared_task
 from django.core.mail import send_mail
+from django.urls import reverse
 
 from .models import Product, ProductDescriptions
 from .services import describe_product_images, generate_product_description
+
+MAX_N = 3
+MAX_WORDS = 800
 
 
 @shared_task
@@ -23,3 +27,25 @@ def generate_product_description_task(tags, product_id, n, words):
 @shared_task
 def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
     send_mail(subject, message, from_email, [to_email])
+
+
+def start_async_tasks(request, product, operation):
+    n = int(request.query_params.get("n", 1))
+    words = int(request.query_params.get("words", 400))
+
+    n = min(n, MAX_N)
+    words = min(words, MAX_WORDS)
+
+    product_url_path = reverse("product-detail", kwargs={"pk": product.id})
+    product_url = request.build_absolute_uri(product_url_path)
+
+    chain(
+        describe_product_images_task.s(product.id),
+        generate_product_description_task.s(product.id, n, words),
+        send_email_task.s(
+            subject=f"Product {operation}",
+            message=f"Your product has been successfully {operation}. You can see the description in {product_url}",
+            from_email="no-reply@masze.pl",
+            to_email=product.created_by.email,
+        ),
+    ).apply_async()
