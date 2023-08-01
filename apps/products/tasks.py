@@ -1,6 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
+from asgiref.sync import async_to_sync
 from celery import chain, shared_task
+from channels.layers import get_channel_layer
 from django.core.mail import send_mail
 from django.urls import reverse
 
@@ -11,21 +13,35 @@ MAX_N = 3
 MAX_WORDS = 800
 
 
+channel_layer = get_channel_layer()
+
+
+def send_description_update(product_id, message):
+    print("test description update")
+    async_to_sync(channel_layer.group_send)(
+        f"product_{product_id}", {"type": "description_update", "message": message}
+    )
+    print("after send description update")
+
+
 @shared_task
 def describe_product_images_task(product_id):
     product = Product.objects.get(id=product_id)
-    return describe_product_images(product)
+    # return describe_product_images(product)
+    return "test xd i howno"
 
 
 @shared_task
 def generate_product_description_task(tags, product_id, n, words):
     product = Product.objects.get(id=product_id)
-    description = generate_product_description(product, tags, n, words)
-    ProductDescriptions.objects.create(product=product, description=description)
+    # description = generate_product_description(product, tags, n, words)
+    # ProductDescriptions.objects.create(product=product, description=description)
+    send_description_update(product_id, "Description generation completed!")
 
 
 @shared_task
 def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
+    # send the notification
     send_mail(subject, message, from_email, [to_email])
 
 

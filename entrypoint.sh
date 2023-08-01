@@ -24,4 +24,4 @@ python manage.py collectstatic --no-input --clear
 python manage.py makemigrations
 python manage.py migrate --no-input
 
-gunicorn --bind "0.0.0.0:${RUN_PORT}" --access-logfile - --error-logfile - config.wsgi:application
+daphne -b 0.0.0.0 -p ${RUN_PORT} config.asgi:application
