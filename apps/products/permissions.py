@@ -1,4 +1,7 @@
 from rest_framework import permissions
+from rest_framework.generics import get_object_or_404
+
+from .models import Product
 
 
 class IsProductAuthorOrReadOnly(permissions.BasePermission):
@@ -10,6 +13,4 @@ class IsProductAuthorOrReadOnly(permissions.BasePermission):
         # Read permissions are allowed to any request,
         if request.method in permissions.SAFE_METHODS:
             return True
-
-        # Write permissions are only allowed to the author of a product.
         return obj.created_by == request.user

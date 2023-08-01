@@ -1,5 +1,5 @@
 from enum import Enum
-from pathlib import Path
+from pathlib import Path, PosixPath
 from typing import List, Optional
 
 import requests
@@ -19,7 +19,7 @@ class ImaggaAPICredentials(BaseModel):
 
 class ImaggaAPIRequest(BaseModel):
     auth: ImaggaAPICredentials
-    image_path: str
+    image_path: Path
     url: Optional[str] = Field(default="https://api.imagga.com/v2/tags")
 
 
@@ -109,8 +109,8 @@ def generate_product_description(product, tags, n, words):
         if "choices" in response_data and len(response_data["choices"]) > 0:
             return response_data["choices"][0]["message"]["content"].strip()
         else:
-            return "Product description generation failed."
+            return False
     except ValidationError as e:
-        return f"Validation error: {e}"
+        return e
     except requests.RequestException as e:
-        return f"HTTP Request failed: {e}"
+        return e

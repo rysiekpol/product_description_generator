@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import PurePath
 
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -107,11 +108,36 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
         ProductImage.objects.bulk_create(images)
 
+        return product
+
+
+class CreateDescriptionSerializer(serializers.ModelSerializer):
+    """
+    Serializer class to create ProductDescriptions model.
+    """
+
+    product_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = ProductDescriptions
+        fields = ("id", "product", "description", "product_id")
+        read_only_fields = ("id", "description", "product")
+
+    def create(self, validated_data):
+        request = self.context["request"]
         # Create descriptions
         try:
-            request = self.context["request"]
+            product = get_object_or_404(Product, id=validated_data["product_id"])
+            if product.created_by != request.user:
+                raise serializers.ValidationError(
+                    "You are not authorized to create a description for this product."
+                )
+
             with ThreadPoolExecutor(max_workers=5) as executor:
                 executor.submit(start_async_tasks, request, product, Operation.CREATED)
+        except serializers.ValidationError as e:
+            raise e
+
         except Exception as e:
             # If there is an error in creating the description, delete the product and raise an error
             product.delete()
@@ -119,7 +145,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
                 f"Error creating product description: {e}"
             )
 
-        return product
+        return validated_data
 
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
@@ -127,8 +153,22 @@ class CreateProductSerializer(serializers.ModelSerializer):
         # Update descriptions
         try:
             request = self.context["request"]
+            if instance.product.created_by != request.user:
+                raise serializers.ValidationError(
+                    "You are not authorized to update a description for this product."
+                )
+
             with ThreadPoolExecutor(max_workers=5) as executor:
-                executor.map(start_async_tasks, request, instance, Operation.UPDATED)
+                executor.map(
+                    start_async_tasks,
+                    request,
+                    instance.product,
+                    Operation.UPDATED,
+                )
+
+        except serializers.ValidationError as e:
+            raise e
+
         except Exception as e:
             raise serializers.ValidationError(
                 f"Error updating product description: {e}"

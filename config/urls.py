@@ -40,7 +40,7 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="product-list", permanent=True)),
     path("user/", include("apps.users.urls")),
     path("admin/", admin.site.urls),
-    path("product/", include("apps.products.urls")),
+    path("", include("apps.products.urls")),
     re_path(
         r"^playground/$",
         schema_view.with_ui("swagger", cache_timeout=0),
