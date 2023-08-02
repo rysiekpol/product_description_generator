@@ -23,5 +23,3 @@ set -e # exit if errors happen anywhere
 python manage.py collectstatic --no-input --clear
 python manage.py makemigrations
 python manage.py migrate --no-input
-
-daphne -b 0.0.0.0 -p ${RUN_PORT} config.asgi:application

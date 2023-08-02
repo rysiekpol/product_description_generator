@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
     container_name: django_api
     ports:
       - 5001:5001
@@ -14,6 +15,24 @@ services:
       - media_volume:/code/media
     env_file:
       - config/settings/.env.prod
+
+  web_ws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: daphne -b 0.0.0.0 -p 5002 config.asgi:application
+    container_name: django_api_ws
+    ports:
+      - 5002:5002
+    depends_on:
+      - db
+      - rabbitmq
+    volumes:
+      - .:/code
+      - static_volume:/code/static
+      - media_volume:/code/media
+    env_file:
+      - config/settings/.env.dev
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -31,6 +50,7 @@ services:
     container_name: django_celery_worker
     command: celery -A config worker -l info -c 2 --max-memory-per-child=150000 --max-tasks-per-child=4
     depends_on:
+      - web_ws
       - web
       - rabbitmq
     volumes:
