@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import PurePath
 
 from django.urls import reverse
@@ -110,8 +109,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         # Create descriptions
         try:
             request = self.context["request"]
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                executor.submit(start_async_tasks, request, product, Operation.CREATED)
+            start_async_tasks(request, product, Operation.CREATED)
         except Exception as e:
             # If there is an error in creating the description, delete the product and raise an error
             product.delete()
@@ -127,8 +125,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         # Update descriptions
         try:
             request = self.context["request"]
-            with ThreadPoolExecutor(max_workers=5) as executor:
-                executor.map(start_async_tasks, request, instance, Operation.UPDATED)
+            start_async_tasks(request, instance, Operation.UPDATED)
         except Exception as e:
             raise serializers.ValidationError(
                 f"Error updating product description: {e}"
