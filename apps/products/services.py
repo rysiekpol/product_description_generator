@@ -1,15 +1,15 @@
-import os
+from pathlib import Path
 
 import requests
 from django.conf import settings
 
 
 def describe_product_images(product):
-    api_key = os.environ.get("API_KEY")
-    api_secret = os.environ.get("API_SECRET")
+    api_key = settings.IMMAGA_API_KEY
+    api_secret = settings.IMMAGA_API_SECRET
     combined_tags = set()
     for image in product.images.all():
-        image_path = str(settings.BASE_DIR) + image.image.url
+        image_path = Path(settings.BASE_DIR, image.image.url.lstrip("/"))
         try:
             response = requests.post(
                 "https://api.imagga.com/v2/tags",
@@ -29,7 +29,7 @@ def describe_product_images(product):
 
 
 def generate_product_description(product, tags, n, words):
-    api_key = os.environ.get("GPT_API_KEY")
+    api_key = settings.GPT_API_KEY
     endpoint = "https://api.openai.com/v1/chat/completions"
 
     prompt = f"Generate a product description for a {product.name} which has tags: {', '.join(tags)}"

@@ -1,5 +1,6 @@
 import mimetypes
 import os
+from pathlib import Path
 
 from django.conf import settings
 from django.http import FileResponse
@@ -55,9 +56,7 @@ def serve_product_image(request, uuid_name):
     """
 
     image = get_object_or_404(ProductImage, image__contains=uuid_name)
-
-    image_path = os.path.join(settings.BASE_DIR, image.image.url.lstrip("/"))
-
+    image_path = Path(settings.BASE_DIR, image.image.url.lstrip("/"))
     response = FileResponse(open(image_path, "rb"))
 
     # Get the mimetype and encoding of the image file

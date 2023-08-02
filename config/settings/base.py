@@ -50,6 +50,10 @@ class SettingsFromEnvironment(BaseSettings):
 
     CELERY_BROKER_URL: str
 
+    IMMAGA_API_KEY: str
+    IMMAGA_API_SECRET: str
+    GPT_API_KEY: str
+
     class Config:
         """Defines configuration for pydantic environment loading"""
 
@@ -245,9 +249,9 @@ EMAIL_HOST = config.EMAIL_HOST
 EMAIL_PORT = config.EMAIL_PORT
 
 # Celery
-
 CELERY_BROKER_URL = config.CELERY_BROKER_URL
 
+# Production settings
 if DEBUG == False:
     SECURE_HSTS_SECONDS = 3600
     SECURE_SSL_REDIRECT = True
@@ -257,8 +261,15 @@ if DEBUG == False:
     EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
     EMAIL_USE_TLS = False
     DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
+    # Cloudflare proxy settings
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Auto change domain name
 MIGRATION_MODULES = {
     "sites": "config.fixtures.sites_migrations",
 }
+
+# External API keys
+IMMAGA_API_KEY = config.IMMAGA_API_KEY
+IMMAGA_API_SECRET = config.IMMAGA_API_SECRET
+GPT_API_KEY = config.GPT_API_KEY
