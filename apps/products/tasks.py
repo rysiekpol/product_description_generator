@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 
 from .models import Product, ProductDescriptions
-from .services import describe_product_images, generate_product_description
+from .services import Operation, describe_product_images, generate_product_description
 
 MAX_N = 3
 MAX_WORDS = 800
@@ -43,8 +43,8 @@ def start_async_tasks(request, product, operation):
         describe_product_images_task.s(product.id),
         generate_product_description_task.s(product.id, n, words),
         send_email_task.s(
-            subject=f"Product {operation}",
-            message=f"Your product has been successfully {operation}. You can see the description in {product_url}",
+            subject=f"Product {operation.value}",
+            message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
             from_email="no-reply@masze.pl",
             to_email=product.created_by.email,
         ),

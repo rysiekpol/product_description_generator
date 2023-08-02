@@ -1,5 +1,5 @@
 from enum import Enum
-from pathlib import Path
+from pathlib import Path, PosixPath
 from typing import List, Optional
 
 import requests
@@ -143,6 +143,6 @@ def generate_product_description(product, tags, n, words):
         parsed_response = OpenAIResponse.model_validate(response_data)
         return parsed_response.choices[0].message.content.strip()
     except ValidationError as e:
-        return f"Validation error: {e}"
+        return e
     except requests.RequestException as e:
-        return f"HTTP Request failed: {e}"
+        return e
