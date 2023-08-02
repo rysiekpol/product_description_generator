@@ -12,6 +12,22 @@ class Operation(Enum):
     UPDATED = "updated"
 
 
+class ImaggaTagInfo(BaseModel):
+    en: str
+
+
+class ImaggaTag(BaseModel):
+    tag: ImaggaTagInfo
+
+
+class ImaggaResult(BaseModel):
+    tags: List[ImaggaTag]
+
+
+class ImaggaResponse(BaseModel):
+    result: ImaggaResult
+
+
 class ImaggaAPICredentials(BaseModel):
     api_key: str
     api_secret: str
@@ -19,7 +35,7 @@ class ImaggaAPICredentials(BaseModel):
 
 class ImaggaAPIRequest(BaseModel):
     auth: ImaggaAPICredentials
-    image_path: str
+    image_path: Path
     url: Optional[str] = Field(default="https://api.imagga.com/v2/tags")
 
 
@@ -27,11 +43,21 @@ class Product(BaseModel):
     name: str
 
 
+class Message(BaseModel):
+    role: str
+    content: str = Field(default=None)
+
+
+class GPTRequest(BaseModel):
+    model: str = "gpt-3.5-turbo"
+    messages: List[Message]
+    max_tokens: int = 0
+    n: int = 0
+
+
 class OpenAIAPIRequest(BaseModel):
     product: Product
     tags: List[str]
-    n: int
-    words: int
     api_key: Optional[str] = Field(default=settings.GPT_API_KEY)
     endpoint: Optional[str] = Field(
         default="https://api.openai.com/v1/chat/completions"
@@ -42,25 +68,23 @@ class OpenAIAPIRequest(BaseModel):
         return f"Generate a product description for a {self.product.name} which has tags: {', '.join(self.tags)}"
 
     @property
-    def data(self) -> dict:
-        return {
-            "model": "gpt-3.5-turbo",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": self.prompt,
-                }
-            ],
-            "max_tokens": self.words,
-            "n": self.n,
-        }
-
-    @property
     def headers(self) -> dict:
         return {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
+
+
+class ResponseMessage(BaseModel):
+    content: str
+
+
+class ResponseChoice(BaseModel):
+    message: ResponseMessage
+
+
+class OpenAIResponse(BaseModel):
+    choices: List[ResponseChoice]
 
 
 def describe_product_images(product):
@@ -82,9 +106,11 @@ def describe_product_images(product):
             )
             response_data = response.json()
 
+            parsed_response = ImaggaResponse.model_validate(response_data)
+
             # Extract the 3 most confident tags from the response
-            tags = response_data["result"]["tags"][:3]
-            tag_names = [tag["tag"]["en"] for tag in tags]
+            tags = parsed_response.result.tags[:3]
+            tag_names = [tag.tag.en for tag in tags]
         except requests.RequestException as e:
             return f"HTTP Request failed: {e}"
         except ValidationError as e:
@@ -99,17 +125,23 @@ def generate_product_description(product, tags, n, words):
         data = OpenAIAPIRequest(
             product=Product(name=product.name),
             tags=tags,
-            n=n,
-            words=words,
         )
 
-        response = requests.post(data.endpoint, json=data.data, headers=data.headers)
-        response_data = response.json()
+        message = Message(role="user", content=data.prompt)
 
-        if "choices" in response_data and len(response_data["choices"]) > 0:
-            return response_data["choices"][0]["message"]["content"].strip()
-        else:
-            return "Product description generation failed."
+        gpt_request = GPTRequest(messages=[message], max_tokens=words, n=n)
+
+        print(gpt_request.model_dump_json())
+        response = requests.post(
+            data.endpoint,
+            json=gpt_request.model_dump(),
+            headers=data.headers,
+        )
+        response_data = response.json()
+        print(response_data)
+
+        parsed_response = OpenAIResponse.model_validate(response_data)
+        return parsed_response.choices[0].message.content.strip()
     except ValidationError as e:
         return f"Validation error: {e}"
     except requests.RequestException as e:
