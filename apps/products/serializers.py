@@ -1,19 +1,11 @@
 from pathlib import PurePath
 
-from celery import chain
+from django.urls import reverse
 from rest_framework import serializers
 
-from django.urls import reverse
-
 from .models import Product, ProductDescriptions, ProductImage
-from .tasks import (
-    describe_product_images_task,
-    generate_product_description_task,
-    send_email_task,
-)
-
-MAX_N = 3
-MAX_WORDS = 800
+from .services import Operation
+from .tasks import start_async_tasks
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -105,12 +97,6 @@ class CreateProductSerializer(serializers.ModelSerializer):
         uploaded_images = validated_data.pop("uploaded_images")
         product = Product(**validated_data)
 
-        n = int(self.context["request"].query_params.get("n", 1))
-        words = int(self.context["request"].query_params.get("words", 400))
-
-        n = min(n, MAX_N)
-        words = min(words, MAX_WORDS)
-
         images = [
             ProductImage(product=product, image=image, original_filename=image.name)
             for image in uploaded_images
@@ -123,18 +109,7 @@ class CreateProductSerializer(serializers.ModelSerializer):
         # Create descriptions
         try:
             request = self.context["request"]
-            product_url_path = reverse("product-detail", kwargs={"pk": product.id})
-            product_url = request.build_absolute_uri(product_url_path)
-            chain(
-                describe_product_images_task.s(product.id),
-                generate_product_description_task.s(product.id, n, words),
-                send_email_task.s(
-                    subject="Product Created",
-                    message=f"Your product has been successfully created. You can see the description in {product_url}",
-                    from_email="no-reply@masze.pl",
-                    to_email=product.created_by.email,
-                ),
-            ).apply_async()
+            start_async_tasks(request, product, Operation.CREATED)
         except Exception as e:
             # If there is an error in creating the description, delete the product and raise an error
             product.delete()
@@ -146,28 +121,11 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
-        n = int(self.context["request"].query_params.get("n", 1))
-        words = int(self.context["request"].query_params.get("words", 400))
-
-        n = min(n, MAX_N)
-        words = min(words, MAX_WORDS)
 
         # Update descriptions
         try:
             request = self.context["request"]
-            product_url_path = reverse("product-detail", kwargs={"pk": instance.id})
-            product_url = request.build_absolute_uri(product_url_path)
-
-            chain(
-                describe_product_images_task.s(instance.id),
-                generate_product_description_task.s(instance.id, n, words),
-                send_email_task.s(
-                    subject="Product Updated",
-                    message=f"Your product has been successfully updated. You can see the description in {product_url}",
-                    from_email="no-reply@masze.pl",
-                    to_email=instance.created_by.email,
-                ),
-            ).apply_async()
+            start_async_tasks(request, instance, Operation.UPDATED)
         except Exception as e:
             raise serializers.ValidationError(
                 f"Error updating product description: {e}"
