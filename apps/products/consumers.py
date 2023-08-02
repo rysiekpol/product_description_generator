@@ -15,7 +15,7 @@ class ProductDescriptionConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
-        print(text_data)
+        pass
 
     async def description_update(self, event):
         print("test description update")

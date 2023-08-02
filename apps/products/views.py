@@ -7,8 +7,13 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import permission_classes
-from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Product, ProductDescriptions, ProductImage
@@ -18,6 +23,7 @@ from .serializers import (
     CreateProductSerializer,
     ProductSerializer,
 )
+from .tasks import send_description_update
 
 # Create your views here.
 

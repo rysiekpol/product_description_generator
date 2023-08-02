@@ -13,35 +13,32 @@ MAX_N = 3
 MAX_WORDS = 800
 
 
-channel_layer = get_channel_layer()
-
-
 def send_description_update(product_id, message):
-    print("test description update")
+    channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         f"product_{product_id}", {"type": "description_update", "message": message}
     )
-    print("after send description update")
 
 
 @shared_task
 def describe_product_images_task(product_id):
     product = Product.objects.get(id=product_id)
-    # return describe_product_images(product)
-    return "test xd i howno"
+    return describe_product_images(product)
 
 
 @shared_task
 def generate_product_description_task(tags, product_id, n, words):
     product = Product.objects.get(id=product_id)
-    # description = generate_product_description(product, tags, n, words)
-    # ProductDescriptions.objects.create(product=product, description=description)
-    send_description_update(product_id, "Description generation completed!")
+    description = generate_product_description(product, tags, n, words)
+    ProductDescriptions.objects.create(product=product, description=description)
 
 
 @shared_task
-def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
+def send_email_task(
+    result_from_previous_task, subject, message, from_email, to_email, product_id
+):
     # send the notification
+    send_description_update(product_id, "Description generation completed!")
     send_mail(subject, message, from_email, [to_email])
 
 
@@ -63,5 +60,6 @@ def start_async_tasks(request, product, operation):
             message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
             from_email="no-reply@masze.pl",
             to_email=product.created_by.email,
+            product_id=product.id,
         ),
     ).apply_async()

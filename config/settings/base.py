@@ -129,12 +129,6 @@ TEMPLATES = [
     },
 ]
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -293,3 +287,14 @@ MIGRATION_MODULES = {
 IMMAGA_API_KEY = config.IMMAGA_API_KEY
 IMMAGA_API_SECRET = config.IMMAGA_API_SECRET
 GPT_API_KEY = config.GPT_API_KEY
+
+# Channels settings
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
