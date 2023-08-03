@@ -1,5 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 
+import json
+
+import requests
+from asgiref.sync import async_to_sync
 from celery import chain, shared_task
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -29,6 +33,34 @@ def send_email_task(result_from_previous_task, subject, message, from_email, to_
     send_mail(subject, message, from_email, [to_email])
 
 
+@shared_task
+def send_email_translation_task(
+    result_from_previous_task, subject, from_email, to_email
+):
+    send_mail(
+        subject=subject,
+        message=result_from_previous_task.encode("utf-8").decode("unicode-escape"),
+        from_email=from_email,
+        recipient_list=[to_email],
+    )
+
+
+@shared_task
+def translate_text_task(text, languages, n, words):
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "text": text,
+        "languages": languages,
+        "n": n,
+        "words": words,
+    }
+    response = requests.post(
+        "http://web_fast_api:5003/translate/", json=payload, headers=headers
+    )
+
+    return response.json()
+
+
 def start_async_tasks(request, product, operation):
     n = int(request.query_params.get("n", 1))
     words = int(request.query_params.get("words", 400))
@@ -47,5 +79,22 @@ def start_async_tasks(request, product, operation):
             message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
             from_email="no-reply@masze.pl",
             to_email=product.created_by.email,
+        ),
+    ).apply_async()
+
+
+def start_async_translation(text, request, languages):
+    n = int(request.query_params.get("n", 1))
+    words = int(request.query_params.get("words", 400))
+
+    n = min(n, MAX_N)
+    words = min(words, MAX_WORDS)
+
+    chain(
+        translate_text_task.s(text, languages, n, words),
+        send_email_translation_task.s(
+            subject=f"Your translation is ready",
+            from_email="no-reply@masze.pl",
+            to_email=request.user.email,
         ),
     ).apply_async()

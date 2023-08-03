@@ -166,3 +166,15 @@ class CreateDescriptionSerializer(serializers.ModelSerializer):
             )
 
         return instance
+
+
+class TranslateTextSerializer(serializers.Serializer):
+    """
+    Serializer class to translate text.
+    """
+
+    description_id = serializers.IntegerField(write_only=True)
+    languages = serializers.ListField(child=serializers.CharField(), max_length=5)
+
+    class Meta:
+        fields = ("description_id", "languages")

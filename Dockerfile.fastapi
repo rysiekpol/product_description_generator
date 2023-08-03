@@ -1,0 +1,13 @@
+FROM python:3.11-slim AS builder
+
+WORKDIR /fastapi
+
+
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN pip install pip --upgrade && \
+    pip install fastapi uvicorn aiohttp
+
+COPY apps apps

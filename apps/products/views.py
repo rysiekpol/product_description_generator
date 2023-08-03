@@ -17,7 +17,9 @@ from .serializers import (
     CreateDescriptionSerializer,
     CreateProductSerializer,
     ProductSerializer,
+    TranslateTextSerializer,
 )
+from .tasks import start_async_translation
 
 # Create your views here.
 
@@ -67,6 +69,35 @@ class DescriptionViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
         queryset = queryset.filter(product__created_by=self.request.user)
         return queryset
+
+
+class TranslateView(CreateAPIView):
+    """
+    An endpoint for translating text.
+    """
+
+    serializer_class = TranslateTextSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Translate the text.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        description_id = serializer.validated_data["description_id"]
+        languages = serializer.validated_data["languages"]
+
+        description = get_object_or_404(ProductDescriptions, id=description_id)
+        text = description.description
+
+        start_async_translation(text, request, languages)
+
+        return Response(
+            {"detail": "Mail with translations will be sent after task is completed"},
+            status=status.HTTP_200_OK,
+        )
 
 
 @permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
