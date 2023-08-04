@@ -25,8 +25,8 @@ services:
       dockerfile: Dockerfile.fastapi
     command: uvicorn apps.translator.urls:app --reload --port 5003 --host 0.0.0.0
     container_name: fastapi
-    ports:
-      - 5003:5003
+    expose:
+      - 5003
     volumes:
       - .:/fastapi
     env_file:
@@ -39,8 +39,6 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_NAME}
-    #volumes:
-      #- postgres_data:/var/lib/postgresql/data/
 
   nginx:
     build: ./nginx
