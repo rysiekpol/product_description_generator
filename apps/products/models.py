@@ -13,9 +13,15 @@ class Product(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    uuid_name = models.UUIDField(editable=False, unique=True, null=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.uuid_name = uuid4()
+        super().save(*args, **kwargs)
 
 
 def name_file(instance, filename):

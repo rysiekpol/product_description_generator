@@ -51,12 +51,14 @@ class ProductSerializer(serializers.ModelSerializer):
 
     images = ProductImageSerializer(many=True, read_only=True)
     descriptions = ProductDescriptionsSerializer(many=True, read_only=True)
+    share_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = (
             "id",
             "name",
+            "share_link",
             "created_by",
             "created_at",
             "updated_at",
@@ -64,6 +66,18 @@ class ProductSerializer(serializers.ModelSerializer):
             "descriptions",
         )
         read_only_fields = ("created_at", "updated_at", "id", "created_by")
+
+    def get_share_link(self, obj):
+        """
+        Returns the share link of the product.
+        """
+        request = self.context["request"]
+        product_url_path = reverse(
+            "share_product",
+            kwargs={"uuid_name": str(obj.uuid_name)},
+        )
+
+        return request.build_absolute_uri(product_url_path)
 
 
 class CreateProductSerializer(serializers.ModelSerializer):

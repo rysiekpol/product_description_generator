@@ -7,7 +7,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import permission_classes
-from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -32,15 +32,15 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
     queryset = Product.objects.all()
 
-    def get_serializer_class(self):
-        if self.action == "create" or self.action == "update":
-            return CreateProductSerializer
-        return ProductSerializer
-
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.filter(created_by=self.request.user)
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == "create" or self.action == "update":
+            return CreateProductSerializer
+        return ProductSerializer
 
 
 class ProductsAPIView(ListAPIView):
@@ -98,6 +98,16 @@ class TranslateView(CreateAPIView):
             {"detail": "Mail with translations will be sent after task is completed"},
             status=status.HTTP_200_OK,
         )
+
+
+class ShareView(RetrieveAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Product.objects.all()
+    lookup_field = "uuid_name"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(uuid_name=self.kwargs["uuid_name"])
 
 
 @permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
