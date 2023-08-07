@@ -36,7 +36,7 @@ class SettingsFromEnvironment(BaseSettings):
     EMAIL_PORT: int = 1025
     EMAIL_HOST_USER: str = ""
     EMAIL_HOST_PASSWORD: str = ""
-    DEFAULT_FROM_EMAIL: str = ""
+    DEFAULT_FROM_EMAIL: str = "no-reply@example.com"
     USE_R2: bool = True
     STORAGES: dict = {
         "default": {"BACKEND": "storages.backends.s3boto3.S3Boto3Storage"},
@@ -53,6 +53,8 @@ class SettingsFromEnvironment(BaseSettings):
     IMMAGA_API_KEY: str
     IMMAGA_API_SECRET: str
     GPT_API_KEY: str
+
+    FAST_API_URL: str = "http://web_fast_api:5003/translate/"
 
     class Config:
         """Defines configuration for pydantic environment loading"""
@@ -247,22 +249,10 @@ ACCOUNT_LOGOUT_ON_GET = False
 EMAIL_BACKEND = config.EMAIL_BACKEND
 EMAIL_HOST = config.EMAIL_HOST
 EMAIL_PORT = config.EMAIL_PORT
+DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
 
 # Celery
 CELERY_BROKER_URL = config.CELERY_BROKER_URL
-
-# Production settings
-if DEBUG == False:
-    SECURE_HSTS_SECONDS = 3600
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    EMAIL_HOST_USER = config.EMAIL_HOST_USER
-    EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
-    EMAIL_USE_TLS = False
-    DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
-    # Cloudflare proxy settings
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Auto change domain name
 MIGRATION_MODULES = {
@@ -273,3 +263,18 @@ MIGRATION_MODULES = {
 IMMAGA_API_KEY = config.IMMAGA_API_KEY
 IMMAGA_API_SECRET = config.IMMAGA_API_SECRET
 GPT_API_KEY = config.GPT_API_KEY
+
+# FastAPI
+FAST_API_URL = config.FAST_API_URL
+
+# Production settings
+if DEBUG == False:
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    EMAIL_HOST_USER = config.EMAIL_HOST_USER
+    EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+    EMAIL_USE_TLS = False
+    # Cloudflare proxy settings
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
