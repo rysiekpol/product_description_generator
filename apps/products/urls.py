@@ -5,6 +5,7 @@ from apps.products import views
 
 from .views import (
     DescriptionViewSet,
+    MySharesView,
     ProductsAPIView,
     ProductViewSet,
     ShareView,
@@ -21,7 +22,8 @@ urlpatterns = [
         name="serve_image",
     ),
     path("translate/", TranslateView.as_view(), name="translate_description"),
-    path("share/<str:uuid_name>/", ShareView.as_view(), name="share_product"),
+    path("share/", ShareView.as_view(), name="share_product"),
+    path("my_shares/", MySharesView.as_view(), name="share_product"),
 ]
 
 router = routers.DefaultRouter()

@@ -40,7 +40,7 @@ class SharedProducts(models.Model):
         on_delete=models.CASCADE,
         related_name="shared_with",
     )
-    expiration_time = models.DateTimeField(auto_now_add=True)
+    expiration_time = models.DateTimeField(editable=False, null=False)
 
     def __str__(self):
         return f"{self.product.name} - {self.shared_by.username} - {self.shared_with.username}"

@@ -20,8 +20,9 @@ DATABASE=postgres
 DATABASE_URL=postgres://db_user:123@db_host:5432/db_name
 PORT=5000
 USE_R2=False
-API_KEY=imagga_api_key
-API_SECRET=imagga_secret_key
+IMMAGA_API_KEY=imagga_api_key
+IMMAGA_API_SECRET=imagga_secret_key
+GPT_API_KEY=gpt_api_key
 
 AWS_STORAGE_BUCKET_NAME=bucket_name
 AWS_S3_ENDPOINT_URL=bucket_url

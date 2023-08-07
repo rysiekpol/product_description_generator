@@ -5,18 +5,20 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import permission_classes
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Product, ProductDescriptions, ProductImage
+from .models import Product, ProductDescriptions, ProductImage, SharedProducts
 from .permissions import IsProductAuthorOrReadOnly
 from .serializers import (
     CreateDescriptionSerializer,
     CreateProductSerializer,
     ProductSerializer,
+    SharedProductsSerializer,
     TranslateTextSerializer,
 )
 from .tasks import start_async_translation
@@ -100,14 +102,25 @@ class TranslateView(CreateAPIView):
         )
 
 
-class ShareView(RetrieveAPIView):
-    serializer_class = ProductSerializer
+class ShareView(CreateAPIView):
+    """
+    An endpoint for sharing a product.
+    """
+
+    serializer_class = SharedProductsSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Product.objects.all()
-    lookup_field = "uuid_name"
+
+
+class MySharesView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+    lookup_field = "shared_with"
 
     def get_queryset(self):
-        return super().get_queryset().filter(uuid_name=self.kwargs["uuid_name"])
+        return Product.objects.filter(
+            shared__shared_with=self.request.user,
+            shared__expiration_time__gte=timezone.now(),
+        )
 
 
 @permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
