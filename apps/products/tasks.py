@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
+from datetime import timezone
 
 import requests
 from asgiref.sync import async_to_sync
@@ -8,7 +9,7 @@ from celery import chain, shared_task
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from .models import Product, ProductDescriptions
+from .models import Product, ProductDescriptions, SharedProducts
 from .services import Operation, describe_product_images, generate_product_description
 
 MAX_N = 3
@@ -98,3 +99,15 @@ def start_async_translation(text, request, languages):
             to_email=request.user.email,
         ),
     ).apply_async()
+
+
+@shared_task
+def delete_expired_products():
+    # get the current time
+    current_time = timezone.now()
+
+    # filter the products that have expired
+    expired_products = SharedProducts.objects.filter(expiration_time__gte=current_time)
+
+    # delete all expired products
+    expired_products.delete()

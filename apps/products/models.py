@@ -24,6 +24,28 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
 
+class SharedProducts(models.Model):
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="shared",
+    )
+    shared_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="shared",
+    )
+    shared_with = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="shared_with",
+    )
+    expiration_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.shared_by.username} - {self.shared_with.username}"
+
+
 def name_file(instance, filename):
     new_filename = f"{uuid4()}{Path(filename).suffix}"
     return Path(settings.MEDIA_PRODUCTS_ROOT) / Path(new_filename)
