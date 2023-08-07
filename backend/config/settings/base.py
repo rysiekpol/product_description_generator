@@ -96,11 +96,13 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "celery",
     "drf_yasg",
+    "corsheaders",
 ]
 
 SITE_ID = 1
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -273,3 +275,9 @@ MIGRATION_MODULES = {
 IMMAGA_API_KEY = config.IMMAGA_API_KEY
 IMMAGA_API_SECRET = config.IMMAGA_API_SECRET
 GPT_API_KEY = config.GPT_API_KEY
+
+# CORS settings
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:3000",
+]

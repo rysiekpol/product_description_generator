@@ -30,9 +30,6 @@ class Navbar extends Component {
                 <NavLink to="/signin">Sign In</NavLink>
               </li>
               <li>
-                <NavLink to="/signup">Sign Up</NavLink>
-              </li>
-              <li>
                 <NavLink to="/products">Products</NavLink>
               </li>
               <li>

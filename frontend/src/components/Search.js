@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function Search() {
+function Search() {
     return <h1>Search Page</h1>;
 }
 
