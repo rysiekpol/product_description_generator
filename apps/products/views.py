@@ -117,10 +117,7 @@ class MySharesView(ListAPIView):
     lookup_field = "shared_with"
 
     def get_queryset(self):
-        return Product.objects.filter(
-            shared__shared_with=self.request.user,
-            shared__expiration_time__gte=timezone.now(),
-        )
+        return self.request.user.shared_by_others.all()
 
 
 @permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
