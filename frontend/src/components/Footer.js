@@ -4,7 +4,7 @@ import "./FooterStyles.css";
 function Footer() {
     return (
       <footer>
-        <p>API.MASZE.PL</p>
+        <p id="footerText">API.MASZE.PL</p>
       </footer>
     );
   }

@@ -13,15 +13,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Root />}>
-          <Route index element={<Home />} />
-          <Route path="signin" element={<SignIn />} />
-          <Route path="products" element={<Products />} />
-          <Route path="search" element={<Search />} />
+        <Route path='/' element={<main><Root /></main>}>
+          <Route path="home" element={<main><Home /></main>} />
+          <Route path="signin" element={<main><SignIn /></main>} />
+          <Route path="products" element={<main><Products /></main>} />
+          <Route path="search" element={<main><Search /></main>} />
         </Route>
       </Routes>
     </BrowserRouter>
-
   );
 }
 

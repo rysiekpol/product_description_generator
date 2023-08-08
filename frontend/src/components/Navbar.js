@@ -13,7 +13,7 @@ class Navbar extends Component {
   render() {
     return (
       <>
-        <nav>
+        <nav id="mainNav">
           <img src={Logo} alt="SVG" style={{ borderRadius: '50%' }} />
 
           <div>
@@ -22,7 +22,7 @@ class Navbar extends Component {
               className={this.state.clicked ? "#navbar active" : "#navbar"}
             >
               <li>
-                <NavLink to="/">
+                <NavLink to="/home">
                   Home
                 </NavLink>
               </li>

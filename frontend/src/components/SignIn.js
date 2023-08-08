@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import {toast } from 'react-toastify';
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom";
-
+import "./SignInStyles.css"
 
 
 function SignIn() {
@@ -10,10 +10,15 @@ function SignIn() {
   const navigate = useNavigate();
   let [authMode, setAuthMode] = useState("signin")
   let [showConfirmation, setShowConfirmation] = useState(false)
+  let [showResetPassword, setShowResetPassword] = useState(false)
   const { register, handleSubmit, getValues, formState: { errors } } = useForm()
 
   const changeAuthMode = () => {
     setAuthMode(authMode === "signin" ? "signup" : "signin")
+  }
+
+  const changeResetState = () => {
+    setShowResetPassword(!showResetPassword)
   }
 
   const handleConfirmation = (data, e) => {
@@ -85,8 +90,8 @@ function SignIn() {
             progress: undefined,
             theme: "colored",
             });
+          localStorage.setItem('access_token', data.access)
           navigate('/')
-          localStorage.setItem('token', data.access_token)
         }
         console.log('Success:', data);
       })
@@ -141,6 +146,40 @@ function SignIn() {
       });
   }
 
+  const handleResetPassword = (data, e) => {
+    e.preventDefault()
+    fetch('http://localhost:5001/user/password/reset/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: data.email,
+      }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.detail === "Password reset e-mail has been sent.") {
+          toast.info("Please check your email for the password reset token", {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            });
+          setShowResetPassword(false)
+        }
+        console.log('Success:', data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+
+
   if (showConfirmation) {
     return (
       <div className="Auth-form-container">
@@ -167,6 +206,41 @@ function SignIn() {
       </div>
     )
   }
+
+  if (showResetPassword) {
+    return (
+      <div className="Auth-form-container">
+        <form className="Auth-form" onSubmit={handleSubmit(handleResetPassword)}>
+          <div className="Auth-form-content">
+            <h3 className="Auth-form-title">Reset your password</h3>
+            <div className="text-center">
+              Got lost?{" "}
+              <span className="link-primary" onClick={changeResetState}>
+                Go Back
+              </span>
+            </div>
+            <div className="form-group mt-3">
+              <label>Email address</label>
+              <input
+                type="email"
+                className="form-control mt-1"
+                placeholder="Enter your email address"
+                {...register("email", { required: true })}
+              />
+                {errors.email && <p className="p-1 text-danger" >{errors.email.message}</p>}
+            </div>
+            <div className="d-grid gap-2 mt-3">
+              <button type="submit" className="btn btn-primary">
+                Reset
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    )
+  }
+
+
   
   if (authMode === "signin") {
     return (
@@ -206,7 +280,7 @@ function SignIn() {
               </button>
             </div>
             <p className="text-center mt-2">
-              Forgot <a href="/">password?</a>
+            <button href="#" className="link-primary link-button" onClick={(e) => setShowResetPassword(true)}>Forgot password?</button>
             </p>
           </div>
         </form>
@@ -261,7 +335,7 @@ function SignIn() {
             </button>
           </div>
           <p className="text-center mt-2">
-            Forgot <a href="/">password?</a>
+          <button href="#" className="link-primary link-button" onClick={(e) => setShowResetPassword(true)}>Forgot password?</button>
           </p>
         </div>
       </form>
