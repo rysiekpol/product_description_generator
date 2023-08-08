@@ -18,7 +18,7 @@ function SignIn() {
 
   const handleConfirmation = (data, e) => {
     e.preventDefault()
-    fetch('http://localhost:5001/user/confirm-email/' + e.target + "/", {
+    fetch('http://localhost:5001/user/confirm-email/' + data.confirmationToken + "/", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +29,16 @@ function SignIn() {
       })
       .then(response => response.json())
       .then(data => {
-        console.log('Success:', data);
+        toast.info("You may now login", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
         setShowConfirmation(false)
       })
       .catch((error) => {
@@ -77,6 +86,7 @@ function SignIn() {
             theme: "colored",
             });
           navigate('/')
+          localStorage.setItem('token', data.access_token)
         }
         console.log('Success:', data);
       })
@@ -101,7 +111,7 @@ function SignIn() {
     })
       .then(response => response.json())
       .then(data => {
-        toast.info(String(data[0]), {
+        toast.info(data.detail, {
           position: "top-center",
           autoClose: 5000,
           hideProgressBar: false,
@@ -111,8 +121,20 @@ function SignIn() {
           progress: undefined,
           theme: "colored",
           });
+        if (data.detail === "Verification e-mail sent.") {
+          toast.info("Please check your email for the confirmation token", {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            });
+          setShowConfirmation(true)
+        }
         console.log('Success:', data);
-        setShowConfirmation(true)
       })
       .catch((error) => {
         console.error('Error:', error);

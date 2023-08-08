@@ -6,9 +6,6 @@ const Products = () => {
   useEffect(() => {
     fetch('http://localhost:5001/product/', {
         method: 'GET',
-        // headers: {
-        //     "Authorization": "Bearer " + localStorage.getItem("access_token"),
-        // },
         credentials: 'include',  // <--- add this line
         })
       .then(response => response.json())
