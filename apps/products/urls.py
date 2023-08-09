@@ -3,7 +3,14 @@ from rest_framework import routers
 
 from apps.products import views
 
-from .views import DescriptionViewSet, ProductsAPIView, ProductViewSet, TranslateView
+from .views import (
+    DescriptionViewSet,
+    MySharesView,
+    ProductsAPIView,
+    ProductViewSet,
+    ShareView,
+    TranslateView,
+)
 
 urlpatterns = [
     path(
@@ -15,6 +22,8 @@ urlpatterns = [
         name="serve_image",
     ),
     path("translate/", TranslateView.as_view(), name="translate_description"),
+    path("share/", ShareView.as_view(), name="share_product"),
+    path("my_shares/", MySharesView.as_view(), name="share_product"),
 ]
 
 router = routers.DefaultRouter()

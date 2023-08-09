@@ -5,6 +5,7 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import permission_classes
 from rest_framework.generics import (
@@ -16,12 +17,13 @@ from rest_framework.generics import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Product, ProductDescriptions, ProductImage
+from .models import Product, ProductDescriptions, ProductImage, SharedProducts
 from .permissions import IsProductAuthorOrReadOnly
 from .serializers import (
     CreateDescriptionSerializer,
     CreateProductSerializer,
     ProductSerializer,
+    SharedProductsSerializer,
     TranslateTextSerializer,
 )
 from .tasks import send_description_update, start_async_translation
@@ -37,15 +39,15 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsProductAuthorOrReadOnly, IsAuthenticated]
     queryset = Product.objects.all()
 
-    def get_serializer_class(self):
-        if self.action == "create" or self.action == "update":
-            return CreateProductSerializer
-        return ProductSerializer
-
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.filter(created_by=self.request.user)
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == "create" or self.action == "update":
+            return CreateProductSerializer
+        return ProductSerializer
 
 
 class ProductsAPIView(ListAPIView):
@@ -103,6 +105,24 @@ class TranslateView(CreateAPIView):
             {"detail": "Mail with translations will be sent after task is completed"},
             status=status.HTTP_200_OK,
         )
+
+
+class ShareView(CreateAPIView):
+    """
+    An endpoint for sharing a product.
+    """
+
+    serializer_class = SharedProductsSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MySharesView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductSerializer
+    lookup_field = "shared_with"
+
+    def get_queryset(self):
+        return self.request.user.shared_by_others.all()
 
 
 @permission_classes([IsAuthenticated, IsProductAuthorOrReadOnly])
