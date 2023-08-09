@@ -75,8 +75,8 @@ def start_async_tasks(request, product, operation):
         describe_product_images_task.s(product.id),
         generate_product_description_task.s(product.id, n, words),
         send_email_task.s(
-            subject=f"Description {operation.value}",
-            message=f"Your description has been successfully {operation.value}. You can see the description in {product_url}",
+            subject=f"Product {operation.value}",
+            message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
             from_email="no-reply@masze.pl",
             to_email=product.created_by.email,
         ),
