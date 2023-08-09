@@ -123,6 +123,20 @@ class CreateProductSerializer(serializers.ModelSerializer):
 
         return product
 
+    def update(self, instance, validated_data):
+        super().update(instance, validated_data)
+        instance.images.all().delete()
+
+        uploaded_images = validated_data.pop("uploaded_images")
+        images = [
+            ProductImage(product=instance, image=image, original_filename=image.name)
+            for image in uploaded_images
+        ]
+
+        ProductImage.objects.bulk_create(images)
+
+        return instance
+
 
 class CreateDescriptionSerializer(serializers.ModelSerializer):
     """

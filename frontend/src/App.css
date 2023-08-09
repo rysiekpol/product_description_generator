@@ -21,6 +21,13 @@ main {
   height: 80vh;
 }
 
+.Product-form-container {
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 80vh;
+}
+
 .Auth-form {
   width: 420px;
   box-shadow: rgb(0 0 0 / 16%) 1px 1px 10px;
