@@ -5,12 +5,31 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    #command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
+    command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
     container_name: django_api
     ports:
       - 5001:5001
     depends_on:
       - db
+      - rabbitmq
+    volumes:
+      - .:/code
+      - static_volume:/code/static
+      - media_volume:/code/media
+    env_file:
+      - config/settings/.env.dev
+
+  web_ws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: daphne -b 0.0.0.0 -p 5002 config.asgi:application
+    container_name: django_api_ws
+    ports:
+      - 5002:5002
+    depends_on:
+      - db
+      - rabbitmq
       - rabbitmq
     volumes:
       - .:/code
@@ -51,6 +70,7 @@ services:
     depends_on:
       - web_fast_api
       - web
+      - web_ws
 
   mailhog:
     image: mailhog/mailhog
@@ -75,6 +95,7 @@ services:
     container_name: django_celery_worker
     command: celery -A config worker -l info
     depends_on:
+      - web_ws
       - web_fast_api
       - web
       - db
@@ -85,6 +106,13 @@ services:
       - media_volume:/code/media
     env_file:
       - config/settings/.env.dev
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+
 
 volumes:
   # postgres_data:

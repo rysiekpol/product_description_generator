@@ -1,10 +1,13 @@
+from datetime import timedelta
 from pathlib import PurePath
 
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Product, ProductDescriptions, ProductImage
+from .models import Product, ProductDescriptions, ProductImage, SharedProducts
 from .services import Operation
 from .tasks import start_async_tasks
 
@@ -51,14 +54,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
     images = ProductImageSerializer(many=True, read_only=True)
     descriptions = ProductDescriptionsSerializer(many=True, read_only=True)
-    share_link = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = (
             "id",
             "name",
-            "share_link",
             "created_by",
             "created_at",
             "updated_at",
@@ -66,18 +67,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "descriptions",
         )
         read_only_fields = ("created_at", "updated_at", "id", "created_by")
-
-    def get_share_link(self, obj):
-        """
-        Returns the share link of the product.
-        """
-        request = self.context["request"]
-        product_url_path = reverse(
-            "share_product",
-            kwargs={"uuid_name": str(obj.uuid_name)},
-        )
-
-        return request.build_absolute_uri(product_url_path)
 
 
 class CreateProductSerializer(serializers.ModelSerializer):
@@ -206,3 +195,97 @@ class TranslateTextSerializer(serializers.Serializer):
 
     class Meta:
         fields = ("description_id", "languages")
+
+
+class SharedProductsSerializer(serializers.ModelSerializer):
+    """
+    Serializer class to share a product.
+    """
+
+    product_id = serializers.IntegerField(write_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+    share_time = serializers.DurationField(write_only=True)
+
+    class Meta:
+        model = SharedProducts
+        fields = ("product_id", "user_id", "share_time")
+
+    def validate_user_id(self, value):
+        """
+        Check that the product owner is not the same as the user sharing the product.
+        """
+
+        user = get_object_or_404(get_user_model(), id=value)
+        if user == self.context["request"].user:
+            raise serializers.ValidationError(
+                "You cannot share a product with yourself."
+            )
+        return value
+
+    def validate_product_id(self, value):
+        """
+        Check that the user sharing the product is the product owner.
+        """
+        product = get_object_or_404(Product, id=value)
+
+        if product.created_by != self.context["request"].user:
+            raise serializers.ValidationError(
+                "You are not authorized to share this product."
+            )
+        return value
+
+    def validate_share_time(self, value):
+        """
+        Check that the share time is between one second and one week.
+        """
+        one_second = timedelta(seconds=1)
+        one_week = timedelta(weeks=1)
+
+        if not one_second <= value <= one_week:
+            raise serializers.ValidationError(
+                "Share time must be between one second and one week."
+            )
+        return value
+
+    def validate(self, data):
+        """
+        Check that the product is not already shared with the user.
+        """
+        print("validate_if_not_existing")
+        print(data)
+        product = get_object_or_404(Product, id=data["product_id"])
+        user = get_object_or_404(get_user_model(), id=data["user_id"])
+
+        if SharedProducts.objects.filter(
+            product=product, shared_with=user, shared_by=self.context["request"].user
+        ).exists():
+            raise serializers.ValidationError(
+                "This product is already shared with this user."
+            )
+        return data
+
+    def create(self, validated_data):
+        # Create shared product
+        try:
+            request = self.context["request"]
+            product = get_object_or_404(Product, id=validated_data["product_id"])
+            shared_with = get_object_or_404(
+                get_user_model(), id=validated_data["user_id"]
+            )
+
+            print(validated_data["share_time"])
+
+            SharedProducts.objects.create(
+                product=product,
+                shared_by=request.user,
+                shared_with=shared_with,
+                expiration_time=timezone.now() + validated_data["share_time"],
+            )
+
+        except serializers.ValidationError as e:
+            raise e
+
+        except Exception as e:
+            raise serializers.ValidationError(f"Error sharing product: {e}")
+
+        return validated_data

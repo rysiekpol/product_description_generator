@@ -1,18 +1,28 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
+from datetime import timezone
 
 import requests
 from asgiref.sync import async_to_sync
 from celery import chain, shared_task
+from channels.layers import get_channel_layer
+from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
 
-from .models import Product, ProductDescriptions
+from .models import Product, ProductDescriptions, SharedProducts
 from .services import Operation, describe_product_images, generate_product_description
 
 MAX_N = 3
 MAX_WORDS = 800
+
+
+def send_description_update(product_id, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"product_{product_id}", {"type": "description_update", "message": message}
+    )
 
 
 @shared_task
@@ -29,7 +39,11 @@ def generate_product_description_task(tags, product_id, n, words):
 
 
 @shared_task
-def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
+def send_email_task(
+    result_from_previous_task, subject, message, from_email, to_email, product_id
+):
+    # send the notification
+    send_description_update(product_id, "Description generation completed!")
     send_mail(subject, message, from_email, [to_email])
 
 
@@ -54,9 +68,7 @@ def translate_text_task(text, languages, n, words):
         "n": n,
         "words": words,
     }
-    response = requests.post(
-        "http://web_fast_api:5003/translate/", json=payload, headers=headers
-    )
+    response = requests.post(settings.FAST_API_URL, json=payload, headers=headers)
 
     return response.json()
 
@@ -77,8 +89,9 @@ def start_async_tasks(request, product, operation):
         send_email_task.s(
             subject=f"Product {operation.value}",
             message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
-            from_email="no-reply@masze.pl",
+            from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=product.created_by.email,
+            product_id=product.id,
         ),
     ).apply_async()
 
@@ -94,7 +107,36 @@ def start_async_translation(text, request, languages):
         translate_text_task.s(text, languages, n, words),
         send_email_translation_task.s(
             subject=f"Your translation is ready",
-            from_email="no-reply@masze.pl",
+            from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=request.user.email,
         ),
     ).apply_async()
+
+
+def start_async_translation(text, request, languages):
+    n = int(request.query_params.get("n", 1))
+    words = int(request.query_params.get("words", 400))
+
+    n = min(n, MAX_N)
+    words = min(words, MAX_WORDS)
+
+    chain(
+        translate_text_task.s(text, languages, n, words),
+        send_email_translation_task.s(
+            subject=f"Your translation is ready",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to_email=request.user.email,
+        ),
+    ).apply_async()
+
+
+@shared_task
+def delete_expired_products():
+    # get the current time
+    current_time = timezone.now()
+
+    # filter the products that have expired
+    expired_products = SharedProducts.objects.filter(expiration_time__gte=current_time)
+
+    # delete all expired products
+    expired_products.delete()
