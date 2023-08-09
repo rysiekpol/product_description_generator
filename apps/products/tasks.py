@@ -1,6 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
+from asgiref.sync import async_to_sync
 from celery import chain, shared_task
+from channels.layers import get_channel_layer
 from django.core.mail import send_mail
 from django.urls import reverse
 
@@ -9,6 +11,13 @@ from .services import Operation, describe_product_images, generate_product_descr
 
 MAX_N = 3
 MAX_WORDS = 800
+
+
+def send_description_update(product_id, message):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f"product_{product_id}", {"type": "description_update", "message": message}
+    )
 
 
 @shared_task
@@ -25,7 +34,11 @@ def generate_product_description_task(tags, product_id, n, words):
 
 
 @shared_task
-def send_email_task(result_from_previous_task, subject, message, from_email, to_email):
+def send_email_task(
+    result_from_previous_task, subject, message, from_email, to_email, product_id
+):
+    # send the notification
+    send_description_update(product_id, "Description generation completed!")
     send_mail(subject, message, from_email, [to_email])
 
 
@@ -47,5 +60,6 @@ def start_async_tasks(request, product, operation):
             message=f"Your product has been successfully {operation.value}. You can see the description in {product_url}",
             from_email="no-reply@masze.pl",
             to_email=product.created_by.email,
+            product_id=product.id,
         ),
     ).apply_async()

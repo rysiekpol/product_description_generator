@@ -75,6 +75,7 @@ ALLOWED_HOSTS = config.ALLOWED_HOSTS
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "apps.users",
     "apps.products",
     "django.contrib.admin",
@@ -128,8 +129,23 @@ TEMPLATES = [
     },
 ]
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
+
 WSGI_APPLICATION = "config.wsgi.application"
 
+ASGI_APPLICATION = "config.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -273,3 +289,14 @@ MIGRATION_MODULES = {
 IMMAGA_API_KEY = config.IMMAGA_API_KEY
 IMMAGA_API_SECRET = config.IMMAGA_API_SECRET
 GPT_API_KEY = config.GPT_API_KEY
+
+# Channels settings
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
