@@ -30,7 +30,6 @@ services:
     depends_on:
       - db
       - rabbitmq
-      - rabbitmq
     volumes:
       - .:/code
       - static_volume:/code/static
