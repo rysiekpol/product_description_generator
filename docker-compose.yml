@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
+    #command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
     container_name: django_api
     ports:
       - 5001:5001

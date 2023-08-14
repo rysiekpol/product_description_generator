@@ -203,19 +203,19 @@ class SharedProductsSerializer(serializers.ModelSerializer):
     """
 
     product_id = serializers.IntegerField(write_only=True)
-    user_id = serializers.IntegerField(write_only=True)
+    user_email = serializers.EmailField(write_only=True)
     share_time = serializers.DurationField(write_only=True)
 
     class Meta:
         model = SharedProducts
-        fields = ("product_id", "user_id", "share_time")
+        fields = ("product_id", "user_email", "share_time")
 
-    def validate_user_id(self, value):
+    def validate_user_email(self, value):
         """
         Check that the product owner is not the same as the user sharing the product.
         """
 
-        user = get_object_or_404(get_user_model(), id=value)
+        user = get_object_or_404(get_user_model(), email=value)
         if user == self.context["request"].user:
             raise serializers.ValidationError(
                 "You cannot share a product with yourself."
@@ -251,10 +251,8 @@ class SharedProductsSerializer(serializers.ModelSerializer):
         """
         Check that the product is not already shared with the user.
         """
-        print("validate_if_not_existing")
-        print(data)
         product = get_object_or_404(Product, id=data["product_id"])
-        user = get_object_or_404(get_user_model(), id=data["user_id"])
+        user = get_object_or_404(get_user_model(), email=data["user_email"])
 
         if SharedProducts.objects.filter(
             product=product, shared_with=user, shared_by=self.context["request"].user
@@ -267,12 +265,15 @@ class SharedProductsSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Create shared product
         try:
+
+            print(validated_data)
+            print("test2")
             request = self.context["request"]
             product = get_object_or_404(Product, id=validated_data["product_id"])
             shared_with = get_object_or_404(
-                get_user_model(), id=validated_data["user_id"]
+                get_user_model(), email=validated_data["user_email"]
             )
-
+            print("test")
             print(validated_data["share_time"])
 
             SharedProducts.objects.create(

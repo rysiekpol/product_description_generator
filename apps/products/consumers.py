@@ -18,6 +18,5 @@ class ProductDescriptionConsumer(AsyncWebsocketConsumer):
         pass
 
     async def description_update(self, event):
-        print("test description update")
         message = event["message"]
         await self.send(text_data=json.dumps({"message": message}))
