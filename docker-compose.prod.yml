@@ -37,11 +37,15 @@ services:
   web_fast_api:
     build:
       context: .
-      dockerfile: dockerfile/Dockerfile.fastapi
+      dockerfile: Dockerfile.fastapi
     command: uvicorn urls:app --reload --proxy-headers --port 5003
     container_name: fastapi
-    ports:
-      - 5003:5003
+    expose:
+      - 5003
+    volumes:
+      - .:/fastapi
+    env_file:
+      - config/settings/.env.prod
 
   rabbitmq:
     image: rabbitmq:3-management-alpine

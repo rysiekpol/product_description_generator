@@ -34,6 +34,7 @@ dj-database-url==2.0.0
 dj-rest-auth==4.0.1
 Django==4.2.3
 django-allauth==0.54.0
+django-cors-headers==4.2.0
 django-extensions==3.2.3
 django-storages==1.13.2
 djangorestframework==3.14.0
