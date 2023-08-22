@@ -317,6 +317,7 @@ GPT_API_KEY = config.GPT_API_KEY
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:3000",
+    "http://api.masze.pl",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

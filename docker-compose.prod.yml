@@ -1,20 +1,26 @@
 version: '3.8'
 
+networks:
+  shared_net:
+    external: true
+
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    command: gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
+    command: gunicorn --bind "0.0.0.0:${PORT}" --access-logfile - --error-logfile - config.wsgi:application
     container_name: django_api
     ports:
-      - 5001:5001
+      - ${PORT}:${PORT}
     volumes:
       - .:/code
       - static_volume:/code/static
       - media_volume:/code/media
     env_file:
       - config/settings/.env.prod
+    networks:
+      - shared_net
 
   web_ws:
     build:
@@ -25,14 +31,15 @@ services:
     ports:
       - 5002:5002
     depends_on:
-      - db
       - rabbitmq
     volumes:
       - .:/code
       - static_volume:/code/static
       - media_volume:/code/media
     env_file:
-      - config/settings/.env.dev
+      - config/settings/.env.prod
+    networks:
+      - shared_net
 
   web_fast_api:
     build:

@@ -23,4 +23,3 @@ set -e # exit if errors happen anywhere
 python manage.py collectstatic --no-input --clear
 python manage.py makemigrations
 python manage.py migrate --no-input
-gunicorn --bind "0.0.0.0:5001" --access-logfile - --error-logfile - config.wsgi:application
